@@ -190,17 +190,37 @@
                 
                 <!-- Left Sidebar: Controls & Summary -->
                 <div class="lg:col-span-1 space-y-6">
-                    <!-- Class Preset -->
+                    <!-- Class & Mode Selection -->
                     <div class="bg-white shadow rounded-lg p-5">
                         <div class="flex justify-between items-center mb-4 border-b pb-2">
-                            <h3 class="text-lg font-medium text-gray-900">Class Preset</h3>
-                            <button id="clear-all-btn" class="text-xs text-red-600 hover:text-red-800 font-medium"><i class="fas fa-trash-alt mr-1"></i>Clear All</button>
+                            <h3 class="text-lg font-medium text-gray-900">Build Settings</h3>
+                            <div class="flex space-x-2">
+                                <button id="optimize-btn" class="text-[10px] text-ro-accent hover:text-orange-600 font-bold uppercase" title="Auto-allocate from inventory"><i class="fas fa-magic mr-1"></i>Optimize</button>
+                                <button id="inv-btn" class="text-[10px] text-green-600 hover:text-green-800 font-bold uppercase" title="Manage owned feathers"><i class="fas fa-box mr-1"></i>Inv</button>
+                                <button id="share-btn" class="text-[10px] text-ro-blue hover:text-ro-blue-light font-bold uppercase" title="Copy shareable link"><i class="fas fa-share-alt"></i></button>
+                                <button id="clear-all-btn" class="text-[10px] text-red-600 hover:text-red-800 font-bold uppercase" title="Clear all"><i class="fas fa-trash-alt"></i></button>
+                            </div>
                         </div>
-                        <select id="class-preset" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-50 py-2 px-3">
-                            <option value="none">Custom / None</option>
-                            <option value="paladin">Paladin (Sacrifice Tank)</option>
-                            <option value="bard">Bard/Minstrel (Support)</option>
-                        </select>
+                        
+                        <div class="space-y-3">
+                            <div>
+                                <label class="ro-label block mb-1">Game Mode</label>
+                                <select id="class-mode" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-50 py-2 px-3 text-sm">
+                                    <option value="pve">PvE Focus</option>
+                                    <option value="pvp">PvP Focus</option>
+                                    <option value="both">Hybrid (PvE & PvP)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="ro-label block mb-1">Class Build</label>
+                                <select id="class-preset" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-50 py-2 px-3 text-sm">
+                                    <!-- Populated via JS -->
+                                </select>
+                            </div>
+                            <button id="print-btn" class="w-full ro-button py-2 text-xs font-bold uppercase text-slate-600 mt-2">
+                                <i class="fas fa-camera mr-2"></i>Save as Image / Print
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Set Unlocks -->
@@ -264,6 +284,25 @@
             </div>
         </div>
     </main>
+
+    <!-- Inventory Modal -->
+    <div id="inv-modal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
+        <div class="ro-window w-full max-w-2xl max-h-[80vh] flex flex-col">
+            <div class="ro-header flex justify-between items-center">
+                <span><i class="fas fa-box mr-2"></i>FEATHER INVENTORY</span>
+                <button id="close-inv" class="text-white hover:text-ro-accent"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="p-4 overflow-y-auto bg-white" id="inv-list">
+                <p class="text-sm text-gray-500 mb-4 italic">Enter the number of feathers you already own. These will be subtracted from the "Required" list in the sidebar.</p>
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-4" id="inv-inputs">
+                    <!-- Rendered via JS -->
+                </div>
+            </div>
+            <div class="p-4 bg-slate-50 border-t flex justify-end">
+                <button id="save-inv" class="ro-button ro-button-primary px-6 py-2 text-sm font-bold uppercase">Done</button>
+            </div>
+        </div>
+    </div>
 
     <script src="js/app.js"></script>
 </body>

@@ -1,0 +1,13 @@
+class_id,mode,display_name,priority_stats,hidden_stats,optimal_atk_feathers,optimal_def_feathers
+paladin_sac,pve,Paladin (Sacrifice Tank),"vit,ignore_pdef,pve_dmg_bonus,pve_dmg_reduction,max_hp,pdef,mdef","str,patk,patk_matk,int,dex","Time,Day,Sky,Grace,Glory","Nature,Night,Terra,Virtue,Soul"
+paladin_sac,pvp,Paladin (Sacrifice Tank),"vit,ignore_pdef,pvp_dmg_bonus,pvp_dmg_reduction,max_hp,pdef,mdef","str,patk,patk_matk,int,dex","Space,Time,Day,Sky,Justice","Divine,Nature,Night,Terra,Soul"
+paladin_sac,both,Paladin (Sacrifice Tank),"vit,ignore_pdef,pve_dmg_bonus,pvp_dmg_bonus,max_hp","str,patk,patk_matk","Time,Day,Sky,Grace,Glory","Nature,Night,Terra,Virtue,Soul"
+dps_phys,pve,DPS (Physical),"str,patk_matk,ignore_pdef,pve_dmg_bonus,dex","int,ignore_mdef","Space,Time,Day,Sky,Glory","Divine,Nature,Night,Terra,Soul"
+dps_phys,pvp,DPS (Physical),"str,patk_matk,ignore_pdef,pvp_dmg_bonus,dex","int,ignore_mdef","Space,Time,Day,Sky,Justice","Divine,Nature,Night,Terra,Soul"
+dps_phys,both,DPS (Physical),"str,patk_matk,ignore_pdef,pve_dmg_bonus,pvp_dmg_bonus","int,ignore_mdef","Space,Time,Day,Sky,Glory","Divine,Nature,Night,Terra,Soul"
+dps_magic,pve,DPS (Magic),"int,patk_matk,ignore_mdef,pve_dmg_bonus,dex","str,ignore_pdef","Space,Time,Day,Sky,Glory","Divine,Nature,Night,Terra,Soul"
+dps_magic,pvp,DPS (Magic),"int,patk_matk,ignore_mdef,pvp_dmg_bonus,dex","str,ignore_pdef","Space,Time,Day,Sky,Justice","Divine,Nature,Night,Terra,Soul"
+dps_magic,both,DPS (Magic),"int,patk_matk,ignore_mdef,pve_dmg_bonus,pvp_dmg_bonus","str,ignore_pdef","Space,Time,Day,Sky,Glory","Divine,Nature,Night,Terra,Soul"
+tank_full,pve,Full Tank / Support,"vit,max_hp,pve_dmg_reduction,pdef,mdef","str,int,patk","Time,Day,Sky,Grace,Glory","Divine,Nature,Night,Terra,Virtue"
+tank_full,pvp,Full Tank / Support,"vit,max_hp,pvp_dmg_reduction,pdef,mdef","str,int,patk","Space,Time,Day,Sky,Justice","Divine,Nature,Night,Terra,Divine"
+tank_full,both,Full Tank / Support,"vit,max_hp,pve_dmg_reduction,pvp_dmg_reduction","str,int,patk","Time,Day,Sky,Grace,Glory","Divine,Nature,Night,Terra,Virtue"
