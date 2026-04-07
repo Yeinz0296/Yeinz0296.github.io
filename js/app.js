@@ -14,7 +14,15 @@ const state = {
     },
     unlockedSets: { atk: ['Duel'], def: ['Wisdom'] },
     build: {}, inventory: {}, 
-    baseStats: { str: 1, agi: 1, vit: 1, int: 1, dex: 1, luk: 1 },
+    baseStats: { 
+        str: { base: 1, bonus: 0 }, 
+        agi: { base: 1, bonus: 0 }, 
+        vit: { base: 1, bonus: 0 }, 
+        int: { base: 1, bonus: 0 }, 
+        dex: { base: 1, bonus: 0 }, 
+        luk: { base: 1, bonus: 0 } 
+    },
+    manualStats: {},
     currentPreset: 'none', currentMode: 'pve'
 };
 
@@ -33,6 +41,32 @@ const STAT_NAMES = {
     'refine_atk': 'Refine PATK', 'refine_matk': 'Refine MATK', 'refine_def': 'Refine PDEF', 
     'refine_mdef': 'Refine MDEF', 'aspd': 'ASPD'
 };
+
+function initManualStats() {
+    const defaultStats = [
+        'max_hp', 'max_sp', 'patk', 'matk', 'refine_atk', 'refine_matk', 
+        'hp_recovery', 'hit', 'pdef', 'mdef', 'refine_def', 'refine_mdef', 
+        'sp_recovery', 'flee', 'aspd', 'crit', 'crit_def', 'magic_dmg_reduction',
+        'max_hp_pct', 'max_sp_pct', 'cast_reduction'
+    ];
+    defaultStats.forEach(s => { if (state.manualStats[s] === undefined) state.manualStats[s] = 0; });
+}
+
+function updateManualStatsModal() {
+    const general = ['max_hp', 'max_sp', 'patk', 'matk', 'refine_atk', 'refine_matk', 'hp_recovery', 'hit', 'pdef', 'mdef', 'refine_def', 'refine_mdef', 'sp_recovery', 'flee'];
+    const quasi = ['aspd', 'crit', 'crit_def', 'magic_dmg_reduction'];
+    const special = ['max_hp_pct', 'max_sp_pct', 'cast_reduction'];
+
+    const renderInput = (key) => `
+        <div class="flex items-center justify-between space-x-4 bg-slate-900/50 p-2 rounded-lg border border-slate-700/30">
+            <label class="text-[10px] font-bold text-slate-400 uppercase flex-1">${STAT_NAMES[key] || key}</label>
+            <input type="number" class="w-24 border-slate-700 rounded-lg bg-slate-950 py-1.5 px-3 text-sm font-bold text-center manual-stat-input" data-stat="${key}" value="${state.manualStats[key] || 0}">
+        </div>`;
+
+    document.getElementById('manual-general-inputs').innerHTML = general.map(renderInput).join('');
+    document.getElementById('manual-quasi-inputs').innerHTML = quasi.map(renderInput).join('');
+    document.getElementById('manual-special-inputs').innerHTML = special.map(renderInput).join('');
+}
 
 function parseNumber(str) { if (!str || str === '') return 0; return parseFloat(str.toString().replace(/,/g, '')) || 0; }
 
@@ -164,7 +198,8 @@ function saveToLocal() {
         preset: state.currentPreset, 
         mode: state.currentMode, 
         inventory: state.inventory,
-        baseStats: state.baseStats
+        baseStats: state.baseStats,
+        manualStats: state.manualStats
     };
     localStorage.setItem('rooc_planner_data_v4', JSON.stringify(data));
 }
@@ -179,6 +214,7 @@ function loadFromLocal() {
             state.currentMode = data.mode || 'pve';
             state.inventory = data.inventory || {};
             state.baseStats = data.baseStats || { str: 1, agi: 1, vit: 1, int: 1, dex: 1, luk: 1 };
+            state.manualStats = data.manualStats || {};
             return true;
         } catch (e) { return false; }
     }
@@ -186,7 +222,7 @@ function loadFromLocal() {
 }
 
 function generateShareUrl() {
-    const data = { b: state.build, u: state.unlockedSets, p: state.currentPreset, m: state.currentMode, i: state.inventory, s: state.baseStats };
+    const data = { b: state.build, u: state.unlockedSets, p: state.currentPreset, m: state.currentMode, i: state.inventory, s: state.baseStats, ms: state.manualStats };
     const hash = btoa(JSON.stringify(data));
     const url = window.location.origin + window.location.pathname + '#share=' + hash;
     navigator.clipboard.writeText(url).then(() => alert('Shareable link copied!'));
@@ -200,6 +236,7 @@ function loadFromHash() {
             const data = JSON.parse(atob(encoded));
             state.build = data.b; state.unlockedSets = data.u; state.currentPreset = data.p; state.currentMode = data.m; state.inventory = data.i || {};
             state.baseStats = data.s || { str: 1, agi: 1, vit: 1, int: 1, dex: 1, luk: 1 };
+            state.manualStats = data.ms || {};
             window.location.hash = ''; return true;
         } catch (e) { return false; }
     }
@@ -242,6 +279,7 @@ async function loadData() {
 
         initBuildState();
         if (!loadFromHash()) loadFromLocal();
+        initManualStats();
 
         updatePresetDropdown();
         updateBaseStatsUI();
@@ -372,9 +410,12 @@ function renderStatues() {
 function updateSummary() {
     let totalStats = {}, totalEden = 0, totalFeatherCosts = {};
     
-    // Initialise with base stat bonuses
+    // Initialise with manual base values
+    Object.entries(state.manualStats).forEach(([k, v]) => totalStats[k] = v);
+    
+    // Add base attribute point bonuses
     const baseBonuses = calculateBaseStatBonuses();
-    Object.entries(baseBonuses).forEach(([k, v]) => totalStats[k] = v);
+    Object.entries(baseBonuses).forEach(([k, v]) => totalStats[k] = (totalStats[k] || 0) + v);
 
     const getFeatherStats = (featherName, requestedTier, type) => {
         if (!featherName) return { stats: {}, eden: 0, featherCount: 0, maxReached: 1 };
@@ -657,6 +698,25 @@ function setupEventListeners() {
     document.getElementById('print-btn').onclick = () => window.print();
     document.getElementById('inv-btn').onclick = openInv;
     document.getElementById('inv-btn-mob').onclick = openInv;
+
+    // Manual Stats Modal Listeners
+    document.getElementById('open-manual-stats').onclick = () => {
+        updateManualStatsModal();
+        document.getElementById('manual-stats-modal').classList.remove('hidden');
+        document.getElementById('manual-stats-modal').classList.add('flex', 'animate-in');
+    };
+
+    document.getElementById('close-manual-stats').onclick = () => {
+        document.getElementById('manual-stats-modal').classList.replace('flex', 'hidden');
+    };
+
+    document.getElementById('save-manual-stats').onclick = () => {
+        document.querySelectorAll('.manual-stat-input').forEach(input => {
+            state.manualStats[input.dataset.stat] = parseFloat(input.value) || 0;
+        });
+        document.getElementById('manual-stats-modal').classList.replace('flex', 'hidden');
+        updateSummary();
+    };
 
     document.getElementById('optimize-btn').onclick = () => {
         if (state.currentPreset === 'none') { alert("Please select a Class Build first."); return; }
