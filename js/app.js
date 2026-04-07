@@ -14,17 +14,24 @@ const state = {
     },
     unlockedSets: { atk: ['Duel'], def: ['Wisdom'] },
     build: {}, inventory: {}, 
+    baseStats: { str: 1, agi: 1, vit: 1, int: 1, dex: 1, luk: 1 },
     currentPreset: 'none', currentMode: 'pve'
 };
 
 const STAT_NAMES = {
-    'patk_matk': 'PATK/MATK', 'pdef': 'PDEF', 'mdef': 'MDEF', 'max_hp': 'Max HP',
+    'patk_matk': 'PATK/MATK', 'pdef': 'PDEF', 'mdef': 'MDEF', 'max_hp': 'HP',
     'pve_dmg_bonus': 'PvE DMG Bonus', 'pve_dmg_reduction': 'PvE DMG Reduction',
     'pvp_dmg_bonus': 'PvP DMG Bonus', 'pvp_dmg_reduction': 'PvP DMG Reduction',
     'ignore_pdef': 'Ignore PDEF', 'ignore_mdef': 'Ignore MDEF',
-    'vit': 'VIT', 'str': 'STR', 'int': 'INT', 'dex': 'DEX',
+    'vit': 'VIT', 'str': 'STR', 'int': 'INT', 'dex': 'DEX', 'agi': 'AGI', 'luk': 'LUK',
     'atk_stat_percent': 'Atk Stat %', 'def_stat_percent': 'Def Stat %',
-    'pve_stat_percent': 'PvE Stat %', 'pvp_stat_percent': 'PvP Stat %'
+    'pve_stat_percent': 'PvE Stat %', 'pvp_stat_percent': 'PvP Stat %',
+    'patk': 'PATK', 'matk': 'MATK', 'flee': 'Flee', 'hit': 'HIT',
+    'crit': 'CRIT', 'crit_def': 'Crit Defense', 'max_sp': 'SP', 'max_hp_pct': 'HP %', 'max_sp_pct': 'SP %',
+    'hp_recovery': 'HP recover', 'sp_recovery': 'SP Recovery',
+    'cast_reduction': 'Cast Time', 'magic_dmg_reduction': 'Magic DMG Reduction',
+    'refine_atk': 'Refine PATK', 'refine_matk': 'Refine MATK', 'refine_def': 'Refine PDEF', 
+    'refine_mdef': 'Refine MDEF', 'aspd': 'ASPD'
 };
 
 function parseNumber(str) { if (!str || str === '') return 0; return parseFloat(str.toString().replace(/,/g, '')) || 0; }
@@ -35,8 +42,130 @@ function initBuildState() {
     });
 }
 
+function calculateBaseStatBonuses() {
+    const { str, agi, vit, int, dex, luk } = state.baseStats;
+    const bonuses = {};
+
+    // HP: 1% increase for every VIT
+    bonuses['max_hp_pct'] = vit * 1;
+    
+    // SP: 1% increase for every INT
+    bonuses['max_sp_pct'] = int * 1;
+
+    // ATK: STR by 1, DEX by 0.2, LUK by 0.2
+    bonuses['patk'] = (str * 1) + (dex * 0.2) + (luk * 0.2);
+
+    // MATK: STR by 0.2, DEX by 1, LUK by 0.2
+    bonuses['matk'] = (str * 0.2) + (dex * 1) + (luk * 0.2);
+
+    // MDEF: VIT by 0.5, AGI by 0.2
+    bonuses['mdef'] = (vit * 0.5) + (agi * 0.2);
+
+    // Refine ATK: INT by 1.5, LUK by 0.3, DEX by 0.2
+    bonuses['refine_atk'] = (int * 1.5) + (luk * 0.3) + (dex * 0.2);
+
+    // Refine MATK: INT by 1, VIT by 0.2, DEX by 0.2
+    bonuses['refine_matk'] = (int * 1) + (vit * 0.2) + (dex * 0.2);
+
+    // Refine DEF: Small increase from DEX/AGI
+    bonuses['refine_def'] = (dex * 0.1) + (agi * 0.1);
+
+    // Refine MDEF: Small increase from DEX/AGI
+    bonuses['refine_mdef'] = (dex * 0.1) + (agi * 0.1);
+
+    // HP & SP Recovery: Small increase from DEX/AGI
+    bonuses['hp_recovery'] = (dex * 0.1) + (agi * 0.1);
+    bonuses['sp_recovery'] = (dex * 0.1) + (agi * 0.1);
+
+    // HIT: Accuracy +1 for every DEX
+    bonuses['hit'] = dex * 1;
+
+    // FLEE: Evasion +1 for every AGI
+    bonuses['flee'] = agi * 1;
+
+    // ASPD: Small increase from DEX/AGI
+    bonuses['aspd'] = (dex * 0.1) + (agi * 0.1);
+
+    // Cast Time: Small increase from DEX/INT
+    bonuses['cast_reduction'] = (dex * 0.1) + (int * 0.1);
+
+    return bonuses;
+}
+
+function calculateStatPointCost(val) {
+    let total = 0;
+    for (let i = 1; i < val; i++) {
+        total += Math.floor((i - 1) / 10) + 2;
+    }
+    return total;
+}
+
+function updateDerivedStatsUI(totalStats = {}) {
+    const generalContainer = document.getElementById('derived-general-stats');
+    const quasiContainer = document.getElementById('derived-quasi-stats');
+    const specialContainer = document.getElementById('derived-special-stats');
+    
+    if (!generalContainer) return;
+
+    const renderStat = (key, val, suffix = '') => `
+        <div class="bg-slate-900/50 p-3 rounded-lg border border-slate-700/50">
+            <label class="ro-label block mb-1">${STAT_NAMES[key] || key}</label>
+            <span class="text-sm font-black text-white">${val.toFixed(1)}${suffix}</span>
+        </div>`;
+
+    // General Stats
+    generalContainer.innerHTML = [
+        renderStat('max_hp', totalStats.max_hp || 0),
+        renderStat('max_sp', totalStats.max_sp || 0),
+        renderStat('patk', totalStats.patk || 0),
+        renderStat('matk', totalStats.matk || 0),
+        renderStat('refine_atk', totalStats.refine_atk || 0),
+        renderStat('refine_matk', totalStats.refine_matk || 0),
+        renderStat('hp_recovery', totalStats.hp_recovery || 0),
+        renderStat('hit', totalStats.hit || 0),
+        renderStat('pdef', totalStats.pdef || 0),
+        renderStat('mdef', totalStats.mdef || 0),
+        renderStat('refine_def', totalStats.refine_def || 0),
+        renderStat('refine_mdef', totalStats.refine_mdef || 0),
+        renderStat('sp_recovery', totalStats.sp_recovery || 0),
+        renderStat('flee', totalStats.flee || 0)
+    ].join('');
+
+    // Quasi-stats
+    quasiContainer.innerHTML = [
+        renderStat('aspd', totalStats.aspd || 0),
+        renderStat('crit', totalStats.crit || 0),
+        renderStat('crit_def', totalStats.crit_def || 0),
+        renderStat('magic_dmg_reduction', totalStats.magic_dmg_reduction || 0)
+    ].join('');
+
+    // Special Stats
+    specialContainer.innerHTML = [
+        renderStat('max_hp_pct', totalStats.max_hp_pct || 0, '%'),
+        renderStat('max_sp_pct', totalStats.max_sp_pct || 0, '%'),
+        renderStat('cast_reduction', totalStats.cast_reduction || 0),
+        `<div class="bg-slate-900/30 p-3 rounded-lg border border-slate-700/30 flex items-center justify-center italic text-[10px] text-slate-500">
+            More special stats coming soon...
+         </div>`
+    ].join('');
+
+    // Update Stat Points
+    let totalPoints = 0;
+    Object.values(state.baseStats).forEach(v => totalPoints += calculateStatPointCost(v));
+    document.getElementById('stat-points-used').innerText = totalPoints.toLocaleString();
+    const maxPoints = 2500; 
+    document.getElementById('stat-points-bar').style.width = `${Math.min(100, (totalPoints / maxPoints) * 100)}%`;
+}
+
 function saveToLocal() {
-    const data = { build: state.build, unlockedSets: state.unlockedSets, preset: state.currentPreset, mode: state.currentMode, inventory: state.inventory };
+    const data = { 
+        build: state.build, 
+        unlockedSets: state.unlockedSets, 
+        preset: state.currentPreset, 
+        mode: state.currentMode, 
+        inventory: state.inventory,
+        baseStats: state.baseStats
+    };
     localStorage.setItem('rooc_planner_data_v4', JSON.stringify(data));
 }
 
@@ -49,6 +178,7 @@ function loadFromLocal() {
             state.currentPreset = data.preset || 'none';
             state.currentMode = data.mode || 'pve';
             state.inventory = data.inventory || {};
+            state.baseStats = data.baseStats || { str: 1, agi: 1, vit: 1, int: 1, dex: 1, luk: 1 };
             return true;
         } catch (e) { return false; }
     }
@@ -56,7 +186,7 @@ function loadFromLocal() {
 }
 
 function generateShareUrl() {
-    const data = { b: state.build, u: state.unlockedSets, p: state.currentPreset, m: state.currentMode, i: state.inventory };
+    const data = { b: state.build, u: state.unlockedSets, p: state.currentPreset, m: state.currentMode, i: state.inventory, s: state.baseStats };
     const hash = btoa(JSON.stringify(data));
     const url = window.location.origin + window.location.pathname + '#share=' + hash;
     navigator.clipboard.writeText(url).then(() => alert('Shareable link copied!'));
@@ -69,10 +199,17 @@ function loadFromHash() {
             const encoded = hash.split('=')[1];
             const data = JSON.parse(atob(encoded));
             state.build = data.b; state.unlockedSets = data.u; state.currentPreset = data.p; state.currentMode = data.m; state.inventory = data.i || {};
+            state.baseStats = data.s || { str: 1, agi: 1, vit: 1, int: 1, dex: 1, luk: 1 };
             window.location.hash = ''; return true;
         } catch (e) { return false; }
     }
     return false;
+}
+
+function updateBaseStatsUI() {
+    document.querySelectorAll('.base-stat-input').forEach(input => {
+        input.value = state.baseStats[input.dataset.stat] || 1;
+    });
 }
 
 async function loadData() {
@@ -107,10 +244,11 @@ async function loadData() {
         if (!loadFromHash()) loadFromLocal();
 
         updatePresetDropdown();
+        updateBaseStatsUI();
         renderApp();
         
         document.getElementById('loading').classList.add('hidden');
-        document.getElementById('tab-feather').classList.remove('hidden');
+        document.getElementById('tab-stats').classList.remove('hidden');
         document.getElementById('class-mode').value = state.currentMode;
         if (state.currentPreset !== 'none') document.getElementById('class-preset').value = state.currentPreset;
 
@@ -233,6 +371,11 @@ function renderStatues() {
 
 function updateSummary() {
     let totalStats = {}, totalEden = 0, totalFeatherCosts = {};
+    
+    // Initialise with base stat bonuses
+    const baseBonuses = calculateBaseStatBonuses();
+    Object.entries(baseBonuses).forEach(([k, v]) => totalStats[k] = v);
+
     const getFeatherStats = (featherName, requestedTier, type) => {
         if (!featherName) return { stats: {}, eden: 0, featherCount: 0, maxReached: 1 };
         const allRows = state.data.feathers[type].filter(f => f.feather === featherName);
@@ -375,6 +518,8 @@ function updateSummary() {
             </div>`;
     });
     if (!hasCost) costBreakdownEl.innerHTML += '<div class="text-center py-4 text-xs italic text-green-400 font-bold bg-green-50/10 border border-green-500/20 rounded-lg">All materials acquired!</div>';
+    
+    updateDerivedStatsUI(totalStats);
     saveToLocal();
 }
 
@@ -559,7 +704,11 @@ function setupEventListeners() {
     });
 
     document.addEventListener('change', (e) => {
-        if (e.target.classList.contains('feather-select')) { 
+        if (e.target.classList.contains('base-stat-input')) {
+            state.baseStats[e.target.dataset.stat] = parseInt(e.target.value) || 1;
+            updateSummary();
+        }
+        else if (e.target.classList.contains('feather-select')) { 
             state.build[e.target.dataset.set][e.target.dataset.slot].feather = e.target.value; 
             renderStatues(); updateSummary(); 
         }

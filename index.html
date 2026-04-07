@@ -243,7 +243,8 @@
                 <div class="flex items-center space-x-1 lg:space-x-4">
                     <!-- Desktop Tabs -->
                     <div class="hidden lg:flex items-center space-x-1">
-                        <a href="#" class="tab-btn active ro-tab" data-target="tab-feather">Feathers</a>
+                        <a href="#" class="tab-btn active ro-tab" data-target="tab-stats">Stats</a>
+                        <a href="#" class="tab-btn ro-tab" data-target="tab-feather">Feathers</a>
                         <a href="#" class="tab-btn ro-tab opacity-30 cursor-not-allowed" title="Coming soon">Equipment</a>
                         <a href="#" class="tab-btn ro-tab" data-target="tab-support">Support</a>
                     </div>
@@ -362,6 +363,130 @@
                 <div id="view-statues" class="lg:col-span-3 mobile-nav-active lg:block">
                     <div id="statues-container" class="space-y-4 lg:space-y-8">
                         <!-- Rendered via JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Tab -->
+        <div id="tab-stats" class="tab-content hidden animate-in p-4 lg:p-0">
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                <!-- Stat Inputs -->
+                <div class="lg:col-span-1 space-y-6">
+                    <div class="bg-slate-800/50 border border-slate-700 rounded-2xl lg:rounded-xl p-5 lg:p-6 shadow-xl">
+                        <h3 class="font-black text-xs uppercase tracking-widest text-slate-500 mb-6">Base Stats</h3>
+                        <div class="space-y-4" id="base-stats-inputs">
+                            <!-- STR -->
+                            <div class="flex items-center justify-between space-x-4">
+                                <label class="ro-label mb-0 flex-1">STR</label>
+                                <input type="number" class="w-24 border-slate-700 rounded-lg bg-slate-900 py-1.5 px-3 text-sm font-bold text-center base-stat-input" data-stat="str" value="1" min="1" max="99">
+                            </div>
+                            <!-- AGI -->
+                            <div class="flex items-center justify-between space-x-4">
+                                <label class="ro-label mb-0 flex-1">AGI</label>
+                                <input type="number" class="w-24 border-slate-700 rounded-lg bg-slate-900 py-1.5 px-3 text-sm font-bold text-center base-stat-input" data-stat="agi" value="1" min="1" max="99">
+                            </div>
+                            <!-- VIT -->
+                            <div class="flex items-center justify-between space-x-4">
+                                <label class="ro-label mb-0 flex-1">VIT</label>
+                                <input type="number" class="w-24 border-slate-700 rounded-lg bg-slate-900 py-1.5 px-3 text-sm font-bold text-center base-stat-input" data-stat="vit" value="1" min="1" max="99">
+                            </div>
+                            <!-- INT -->
+                            <div class="flex items-center justify-between space-x-4">
+                                <label class="ro-label mb-0 flex-1">INT</label>
+                                <input type="number" class="w-24 border-slate-700 rounded-lg bg-slate-900 py-1.5 px-3 text-sm font-bold text-center base-stat-input" data-stat="int" value="1" min="1" max="99">
+                            </div>
+                            <!-- DEX -->
+                            <div class="flex items-center justify-between space-x-4">
+                                <label class="ro-label mb-0 flex-1">DEX</label>
+                                <input type="number" class="w-24 border-slate-700 rounded-lg bg-slate-900 py-1.5 px-3 text-sm font-bold text-center base-stat-input" data-stat="dex" value="1" min="1" max="99">
+                            </div>
+                            <!-- LUK -->
+                            <div class="flex items-center justify-between space-x-4">
+                                <label class="ro-label mb-0 flex-1">LUK</label>
+                                <input type="number" class="w-24 border-slate-700 rounded-lg bg-slate-900 py-1.5 px-3 text-sm font-bold text-center base-stat-input" data-stat="luk" value="1" min="1" max="99">
+                            </div>
+                        </div>
+                        <div class="mt-6 pt-6 border-t border-slate-700">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Stat Points Used</span>
+                                <span id="stat-points-used" class="text-xs font-black text-white">0</span>
+                            </div>
+                            <div class="w-full bg-slate-900 rounded-full h-1.5 border border-slate-700 overflow-hidden">
+                                <div id="stat-points-bar" class="bg-ro-blue h-full" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Derived Stats Display -->
+                <div class="lg:col-span-3 space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- General Stats -->
+                        <div class="ro-window overflow-hidden">
+                            <div class="ro-header">
+                                <span class="text-xs font-bold uppercase tracking-widest">General Stats</span>
+                                <i class="fas fa-swords text-slate-500 text-xs"></i>
+                            </div>
+                            <div class="p-6 grid grid-cols-2 gap-4" id="derived-general-stats">
+                                <!-- Populated via JS -->
+                            </div>
+                        </div>
+
+                        <!-- Quasi-stats -->
+                        <div class="ro-window overflow-hidden">
+                            <div class="ro-header">
+                                <span class="text-xs font-bold uppercase tracking-widest">Quasi-stats</span>
+                                <i class="fas fa-shield-alt text-slate-500 text-xs"></i>
+                            </div>
+                            <div class="p-6 grid grid-cols-2 gap-4" id="derived-quasi-stats">
+                                <!-- Populated via JS -->
+                            </div>
+                        </div>
+
+                        <!-- Special Stats -->
+                        <div class="ro-window md:col-span-2 overflow-hidden">
+                            <div class="ro-header">
+                                <span class="text-xs font-bold uppercase tracking-widest">Special Stats</span>
+                                <i class="fas fa-star text-slate-500 text-xs"></i>
+                            </div>
+                            <div class="p-6 grid grid-cols-2 md:grid-cols-4 gap-4" id="derived-special-stats">
+                                <!-- Populated via JS -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Stat Bonuses Info -->
+                    <div class="bg-slate-900/40 border border-slate-800 rounded-2xl p-6">
+                        <h4 class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4 flex items-center">
+                            <i class="fas fa-info-circle mr-2"></i> Stat Bonus Information
+                        </h4>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-[10px] text-slate-400 leading-relaxed">
+                            <div>
+                                <p class="font-bold text-slate-300 mb-1 uppercase">Strength (STR)</p>
+                                <p>Melee ATK +1, Ranged ATK +0.2<br>Melee Weapon ATK +0.5%</p>
+                            </div>
+                            <div>
+                                <p class="font-bold text-slate-300 mb-1 uppercase">Agility (AGI)</p>
+                                <p>Flee +1, P.Def +0.2<br>Attack Speed Increase</p>
+                            </div>
+                            <div>
+                                <p class="font-bold text-slate-300 mb-1 uppercase">Vitality (VIT)</p>
+                                <p>MaxHP +1%, P.Def +0.5, M.Def +0.2<br>HP Recovery +0.2</p>
+                            </div>
+                            <div>
+                                <p class="font-bold text-slate-300 mb-1 uppercase">Intelligence (INT)</p>
+                                <p>MATK +1.5, MaxSP +1%, M.Def +1<br>SP Recovery & Cast Reduction</p>
+                            </div>
+                            <div>
+                                <p class="font-bold text-slate-300 mb-1 uppercase">Dexterity (DEX)</p>
+                                <p>Ranged ATK +1, Melee ATK +0.2, Hit +1<br>Ranged Weapon ATK +0.5%</p>
+                            </div>
+                            <div>
+                                <p class="font-bold text-slate-300 mb-1 uppercase">Luck (LUK)</p>
+                                <p>CRIT +0.3, Crit Def +0.2<br>PATK +0.2, MATK +0.3</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -495,7 +620,11 @@
 
     <!-- Mobile Bottom Navigation -->
     <div class="lg:hidden fixed bottom-0 left-0 right-0 h-16 glass-nav z-50 flex items-center px-4">
-        <button class="mobile-tab-btn active" data-target="tab-feather">
+        <button class="mobile-tab-btn active" data-target="tab-stats">
+            <i class="fas fa-chart-line"></i>
+            <span>Stats</span>
+        </button>
+        <button class="mobile-tab-btn" data-target="tab-feather">
             <i class="fas fa-feather"></i>
             <span>Statue</span>
         </button>
