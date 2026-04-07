@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ROOC Planner - Valkyrie Feather</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
@@ -36,6 +36,7 @@
             background-attachment: fixed;
             font-family: 'Quicksand', sans-serif;
             color: var(--ro-text-main);
+            -webkit-tap-highlight-color: transparent;
         }
 
         .ro-window {
@@ -47,9 +48,11 @@
             overflow: hidden;
         }
 
-        .ro-window:hover {
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
-            border-color: #475569;
+        @media (min-width: 1024px) {
+            .ro-window:hover {
+                box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+                border-color: #475569;
+            }
         }
 
         .ro-header {
@@ -73,11 +76,6 @@
             position: relative;
         }
 
-        .ro-tab:hover {
-            color: var(--ro-blue);
-            background: rgba(66, 153, 225, 0.1);
-        }
-
         .ro-tab.active {
             color: var(--ro-blue);
             border-bottom: 2px solid var(--ro-blue);
@@ -96,12 +94,6 @@
             border-radius: 8px;
             padding: 12px;
             transition: all 0.2s;
-        }
-
-        .ro-slot:focus-within {
-            border-color: var(--ro-blue);
-            background: #1e293b;
-            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.2);
         }
 
         .ro-slot-gold {
@@ -132,20 +124,10 @@
             color: var(--ro-text-main);
         }
 
-        .ro-button-outline:hover {
-            background: rgba(255, 255, 255, 0.1);
-            border-color: #475569;
-        }
-
         .ro-button-primary {
             background: var(--ro-blue);
             color: white;
             border: 1px solid var(--ro-blue-dark);
-        }
-
-        .ro-button-primary:hover {
-            background: var(--ro-blue-dark);
-            box-shadow: 0 4px 12px rgba(66, 153, 225, 0.3);
         }
 
         .ro-label {
@@ -172,20 +154,10 @@
             border-color: #744210;
         }
 
-        .info-pill {
-            background: #334155;
-            color: var(--ro-text-main);
-            padding: 2px 8px;
-            border-radius: 9999px;
-            font-size: 0.7rem;
-            font-weight: 600;
-        }
-
         /* Modern scrollbar */
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: var(--ro-bg); }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #475569; }
 
         select, input {
             background-color: #0f172a;
@@ -217,32 +189,76 @@
         }
         .dot-gold { background-color: var(--ro-gold); box-shadow: 0 0 8px rgba(246, 224, 94, 0.6); }
         .dot-purple { background-color: var(--ro-purple); box-shadow: 0 0 8px rgba(183, 148, 244, 0.6); }
+
+        /* Mobile specific styles */
+        @media (max-width: 1023px) {
+            .mobile-nav-hidden { display: none !important; }
+            .mobile-nav-active { display: block !important; }
+            .ro-window { border-radius: 0; border-left: none; border-right: none; }
+        }
+
+        .mobile-tab-btn {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 0;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--ro-text-muted);
+            transition: all 0.2s;
+        }
+
+        .mobile-tab-btn.active { color: var(--ro-blue); }
+        .mobile-tab-btn i { font-size: 18px; margin-bottom: 4px; }
+
+        .glass-nav {
+            background: rgba(15, 23, 42, 0.9);
+            backdrop-filter: blur(12px);
+            border-top: 1px solid var(--ro-border);
+        }
+
+        .view-toggle-btn.active {
+            background-color: var(--ro-blue);
+            color: white;
+            border-color: var(--ro-blue-dark);
+        }
     </style>
 </head>
-<body class="min-h-screen">
+<body class="min-h-screen pb-20 lg:pb-0">
     <!-- Navbar -->
-    <nav class="bg-slate-900/80 backdrop-blur-md border-b border-slate-800 mb-8 sticky top-0 z-40">
+    <nav class="bg-slate-900/80 backdrop-blur-md border-b border-slate-800 sticky top-0 z-40">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16">
+            <div class="flex justify-between h-14 lg:h-16">
                 <div class="flex items-center">
-                    <div class="flex-shrink-0 flex items-center font-bold text-xl text-ro-blue tracking-tighter">
-                        <div class="w-8 h-8 bg-ro-blue rounded-lg flex items-center justify-center mr-3 shadow-lg shadow-blue-500/20">
-                            <i class="fas fa-gem text-white text-xs"></i>
+                    <div class="flex-shrink-0 flex items-center font-bold text-lg lg:text-xl text-ro-blue tracking-tighter">
+                        <div class="w-7 h-7 lg:w-8 lg:h-8 bg-ro-blue rounded-lg flex items-center justify-center mr-2 lg:mr-3 shadow-lg shadow-blue-500/20">
+                            <i class="fas fa-gem text-white text-[10px] lg:text-xs"></i>
                         </div>
                         ROOC <span class="text-ro-accent ml-1">PLANNER</span>
                     </div>
                 </div>
-                <div class="flex items-center space-x-1">
-                    <a href="#" class="tab-btn active ro-tab" data-target="tab-feather">Feathers</a>
-                    <a href="#" class="tab-btn ro-tab opacity-30 cursor-not-allowed" title="Coming soon">Equipment</a>
-                    <a href="#" class="tab-btn ro-tab" data-target="tab-support">Support</a>
+                <div class="flex items-center space-x-1 lg:space-x-4">
+                    <!-- Desktop Tabs -->
+                    <div class="hidden lg:flex items-center space-x-1">
+                        <a href="#" class="tab-btn active ro-tab" data-target="tab-feather">Feathers</a>
+                        <a href="#" class="tab-btn ro-tab opacity-30 cursor-not-allowed" title="Coming soon">Equipment</a>
+                        <a href="#" class="tab-btn ro-tab" data-target="tab-support">Support</a>
+                    </div>
+                    <!-- Mobile Modal Triggers -->
+                    <div class="flex lg:hidden items-center space-x-2">
+                        <button id="inv-btn-mob" class="w-9 h-9 flex items-center justify-center rounded-xl bg-green-500/10 text-green-400 border border-green-500/20"><i class="fas fa-box text-sm"></i></button>
+                        <button id="share-btn-mob" class="w-9 h-9 flex items-center justify-center rounded-xl bg-blue-500/10 text-blue-400 border border-blue-500/20"><i class="fas fa-share-alt text-sm"></i></button>
+                    </div>
                 </div>
             </div>
         </div>
     </nav>
 
     <!-- Main Content -->
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+    <main class="max-w-7xl mx-auto px-0 lg:px-8 lg:py-8">
         <!-- Loading State -->
         <div id="loading" class="flex flex-col justify-center items-center py-32">
             <div class="relative">
@@ -254,61 +270,51 @@
 
         <!-- Feather Tab -->
         <div id="tab-feather" class="tab-content hidden">
-            <!-- Data Disclaimer Notice -->
-            <div class="ro-window mb-8 border-none bg-gradient-to-r from-orange-900/20 to-slate-800/50">
-                <div class="flex flex-col sm:flex-row">
-                    <div class="bg-orange-500/20 p-4 flex items-center justify-center sm:w-16">
-                        <i class="fas fa-flask text-ro-accent text-xl"></i>
-                    </div>
-                    <div class="p-5 flex-1">
-                        <h4 class="text-ro-accent font-black text-xs uppercase tracking-widest mb-2">Researcher's Note</h4>
-                        <div class="text-sm text-slate-300 leading-relaxed">
-                            <p>
-                                This tool is based on <span class="font-bold text-white">personal in-game research</span>. 
-                                Some values for high-tier feathers and set bonuses are estimated. 
-                                If you have more accurate data, please reach out via the 
-                                <a href="#" class="text-ro-blue font-bold hover:underline" onclick="document.querySelector('[data-target=\'tab-support\']').click()">Support</a> tab.
-                            </p>
-                        </div>
-                    </div>
-                </div>
+            <!-- Mobile Toggle View -->
+            <div class="lg:hidden flex p-2 space-x-2 bg-slate-900/50 backdrop-blur-sm sticky top-14 z-30 border-b border-slate-800">
+                <button class="view-toggle-btn active flex-1 py-2.5 rounded-xl font-bold text-[10px] uppercase tracking-widest bg-slate-800 text-slate-400 border border-slate-700 transition-all" data-view="statues">
+                    <i class="fas fa-chess-knight mr-2"></i>Statues
+                </button>
+                <button class="view-toggle-btn flex-1 py-2.5 rounded-xl font-bold text-[10px] uppercase tracking-widest bg-slate-800 text-slate-400 border border-slate-700 transition-all" data-view="summary">
+                    <i class="fas fa-chart-bar mr-2"></i>Attributes
+                </button>
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
                 
                 <!-- Left Sidebar: Controls & Summary -->
-                <div class="lg:col-span-1 space-y-8">
+                <div id="view-summary" class="lg:col-span-1 space-y-4 lg:space-y-8 p-4 lg:p-0 mobile-nav-hidden lg:block">
                     <!-- Class & Mode Selection -->
-                    <div class="bg-slate-800/50 border border-slate-700 rounded-xl p-6 shadow-xl">
+                    <div class="bg-slate-800/50 border border-slate-700 rounded-2xl lg:rounded-xl p-5 lg:p-6 shadow-xl">
                         <div class="flex justify-between items-center mb-6">
                             <h3 class="font-black text-xs uppercase tracking-widest text-slate-500">Configuration</h3>
-                            <div class="flex space-x-1">
-                                <button id="inv-btn" class="w-8 h-8 flex items-center justify-center rounded-lg bg-green-500/10 text-green-400 hover:bg-green-500/20 transition-colors" title="Inventory"><i class="fas fa-box text-xs"></i></button>
-                                <button id="share-btn" class="w-8 h-8 flex items-center justify-center rounded-lg bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 transition-colors" title="Share"><i class="fas fa-share-alt text-xs"></i></button>
-                                <button id="clear-all-btn" class="w-8 h-8 flex items-center justify-center rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors" title="Reset All"><i class="fas fa-trash-alt text-xs"></i></button>
+                            <div class="hidden lg:flex space-x-1">
+                                <button id="inv-btn" class="w-8 h-8 flex items-center justify-center rounded-lg bg-green-500/10 text-green-400 hover:bg-green-500/20 transition-colors"><i class="fas fa-box text-xs"></i></button>
+                                <button id="share-btn" class="w-8 h-8 flex items-center justify-center rounded-lg bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 transition-colors"><i class="fas fa-share-alt text-xs"></i></button>
+                                <button id="clear-all-btn" class="w-8 h-8 flex items-center justify-center rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors"><i class="fas fa-trash-alt text-xs"></i></button>
                             </div>
                         </div>
                         
                         <div class="space-y-4">
                             <div>
                                 <label class="ro-label">Focus Mode</label>
-                                <select id="class-mode" class="w-full border-slate-700 rounded-lg shadow-inner bg-slate-900 py-2.5 px-3 text-sm font-semibold outline-none transition-all focus:border-ro-blue">
-                                    <option value="pve">PvE (Monster/Boss)</option>
-                                    <option value="pvp">PvP (Arena/Guild)</option>
+                                <select id="class-mode" class="w-full border-slate-700 rounded-xl bg-slate-900 py-3 px-4 text-sm font-semibold outline-none transition-all focus:border-ro-blue">
+                                    <option value="pve">PvE Focus</option>
+                                    <option value="pvp">PvP Focus</option>
                                     <option value="both">Hybrid Focus</option>
                                 </select>
                             </div>
                             <div>
                                 <label class="ro-label">Recommended Build</label>
-                                <select id="class-preset" class="w-full border-slate-700 rounded-lg shadow-inner bg-slate-900 py-2.5 px-3 text-sm font-semibold outline-none transition-all focus:border-ro-blue">
+                                <select id="class-preset" class="w-full border-slate-700 rounded-xl bg-slate-900 py-3 px-4 text-sm font-semibold outline-none transition-all focus:border-ro-blue">
                                     <!-- Populated via JS -->
                                 </select>
                             </div>
-                            <div class="pt-2 grid grid-cols-2 gap-2">
-                                <button id="optimize-btn" class="ro-button ro-button-primary w-full py-2.5 shadow-lg shadow-blue-500/20">
+                            <div class="pt-2 grid grid-cols-2 gap-3">
+                                <button id="optimize-btn" class="ro-button ro-button-primary w-full py-3 rounded-xl shadow-lg shadow-blue-500/20">
                                     <i class="fas fa-magic mr-2"></i>Apply
                                 </button>
-                                <button id="print-btn" class="ro-button ro-button-outline w-full py-2.5">
+                                <button id="print-btn" class="ro-button ro-button-outline w-full py-3 rounded-xl">
                                     <i class="fas fa-camera mr-2"></i>Print
                                 </button>
                             </div>
@@ -316,44 +322,36 @@
                     </div>
 
                     <!-- Set Unlocks -->
-                    <div class="bg-slate-800/50 border border-slate-700 rounded-xl p-6 shadow-xl">
+                    <div class="bg-slate-800/50 border border-slate-700 rounded-2xl lg:rounded-xl p-5 lg:p-6 shadow-xl">
                         <h3 class="font-black text-xs uppercase tracking-widest text-slate-500 mb-6">Statue Management</h3>
                         <div class="space-y-6">
                             <div>
                                 <h4 class="text-[10px] font-black text-red-400 mb-3 uppercase tracking-tighter flex items-center">
                                     <span class="w-1 h-3 bg-red-400 rounded-full mr-2"></span> Offensive Statues
                                 </h4>
-                                <div class="flex flex-wrap gap-2" id="atk-set-toggles">
-                                    <!-- Rendered via JS -->
-                                </div>
+                                <div class="flex flex-wrap gap-2" id="atk-set-toggles"></div>
                             </div>
                             <div>
                                 <h4 class="text-[10px] font-black text-blue-400 mb-3 uppercase tracking-tighter flex items-center">
                                     <span class="w-1 h-3 bg-blue-400 rounded-full mr-2"></span> Defensive Statues
                                 </h4>
-                                <div class="flex flex-wrap gap-2" id="def-set-toggles">
-                                    <!-- Rendered via JS -->
-                                </div>
+                                <div class="flex flex-wrap gap-2" id="def-set-toggles"></div>
                             </div>
                         </div>
                     </div>
 
                     <!-- Stats Summary -->
-                    <div class="bg-slate-800/50 border border-slate-700 rounded-xl p-6 shadow-xl sticky top-24">
+                    <div class="bg-slate-800/50 border border-slate-700 rounded-2xl lg:rounded-xl p-5 lg:p-6 shadow-xl lg:sticky lg:top-24">
                         <h3 class="font-black text-xs uppercase tracking-widest text-slate-500 mb-6">Final Attributes</h3>
-                        <div id="stats-summary" class="space-y-1 mb-8">
-                            <!-- Rendered via JS -->
-                        </div>
+                        <div id="stats-summary" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-2 mb-8"></div>
                         
                         <div class="pt-6 border-t border-slate-700">
-                            <div id="cost-breakdown" class="space-y-1">
-                                <!-- Feather counts rendered via JS -->
-                            </div>
-                            <div class="mt-6 bg-slate-900 rounded-xl p-4 border border-slate-700 shadow-inner">
+                            <div id="cost-breakdown" class="space-y-1"></div>
+                            <div class="mt-6 bg-slate-900 rounded-2xl p-5 border border-slate-700 shadow-inner">
                                 <div class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Eden Coins Required</div>
                                 <div class="flex items-baseline">
-                                    <span id="total-eden" class="text-xl font-black text-yellow-400">0</span>
-                                    <span class="ml-2 text-[10px] text-slate-500 font-bold uppercase">Coins</span>
+                                    <span id="total-eden" class="text-2xl font-black text-yellow-400">0</span>
+                                    <span class="ml-2 text-[10px] text-slate-400 font-bold uppercase">Coins</span>
                                 </div>
                             </div>
                         </div>
@@ -361,8 +359,8 @@
                 </div>
 
                 <!-- Right Area: Statues Config -->
-                <div class="lg:col-span-3">
-                    <div id="statues-container">
+                <div id="view-statues" class="lg:col-span-3 mobile-nav-active lg:block">
+                    <div id="statues-container" class="space-y-4 lg:space-y-8">
                         <!-- Rendered via JS -->
                     </div>
                 </div>
@@ -370,36 +368,124 @@
         </div>
 
         <!-- Support Me Tab -->
-        <div id="tab-support" class="tab-content hidden animate-in">
-            <div class="max-w-4xl mx-auto">
+        <div id="tab-support" class="tab-content hidden animate-in p-4 lg:p-0">
+            <div class="max-w-5xl mx-auto space-y-6 lg:space-y-10">
+                
+                <!-- Roadmap Section -->
                 <div class="bg-slate-800/50 border border-slate-700 rounded-3xl overflow-hidden shadow-2xl">
-                    <div class="md:flex">
-                        <div class="md:w-1/2 p-12 flex flex-col justify-center bg-slate-900/30">
-                            <div class="w-16 h-16 bg-ro-accent rounded-2xl flex items-center justify-center mb-8 shadow-lg shadow-orange-500/20">
-                                <i class="fas fa-heart text-white text-2xl"></i>
-                            </div>
-                            <h2 class="text-3xl font-black text-white mb-6">Support the Development</h2>
-                            <p class="text-slate-400 leading-relaxed mb-8">
-                                If you find this tool helpful for your journey in Ragnarok Origin, consider buying me a coffee! 
-                                Your support helps me keep the database updated and improve the planner with new features.
-                            </p>
-                            <div class="space-y-4">
-                                <div class="flex items-center text-sm font-bold text-slate-300">
-                                    <div class="w-6 h-6 rounded-full bg-green-500/10 text-green-400 flex items-center justify-center mr-3 text-[10px]"><i class="fas fa-check"></i></div>
-                                    Regular data updates
+                    <div class="px-8 py-6 border-b border-slate-700 bg-slate-900/50 flex items-center justify-between">
+                        <div>
+                            <h3 class="text-white font-black text-sm uppercase tracking-widest">Development Roadmap</h3>
+                            <p class="text-slate-500 text-[10px] font-bold uppercase tracking-tighter">Current progress and upcoming features</p>
+                        </div>
+                        <div class="px-3 py-1 bg-blue-500/10 border border-blue-500/20 rounded-full">
+                            <span class="text-[9px] font-black text-blue-400 uppercase">Alpha v1.2</span>
+                        </div>
+                    </div>
+                    <div class="p-8">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <!-- Feather -->
+                            <div class="bg-slate-900/50 border border-slate-700 p-5 rounded-2xl flex items-center group hover:border-blue-500/50 transition-all">
+                                <div class="w-12 h-12 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center mr-4 group-hover:scale-110 transition-transform">
+                                    <i class="fas fa-feather text-xl"></i>
                                 </div>
-                                <div class="flex items-center text-sm font-bold text-slate-300">
-                                    <div class="w-6 h-6 rounded-full bg-blue-500/10 text-blue-400 flex items-center justify-center mr-3 text-[10px]"><i class="fas fa-check"></i></div>
-                                    Mobile-friendly interface
+                                <div>
+                                    <h4 class="text-white font-bold text-sm">Valkyrie Feather</h4>
+                                    <span class="text-[9px] font-black text-green-400 uppercase tracking-widest"><i class="fas fa-check-circle mr-1"></i>V1 Completed</span>
+                                </div>
+                            </div>
+                            <!-- Stat -->
+                            <div class="bg-slate-900/50 border border-blue-500/30 p-5 rounded-2xl flex items-center group relative overflow-hidden transition-all">
+                                <div class="absolute top-0 right-0 px-2 py-0.5 bg-blue-500 text-[8px] font-black text-white uppercase tracking-tighter rounded-bl-lg">Active</div>
+                                <div class="w-12 h-12 rounded-xl bg-blue-500/20 text-blue-300 flex items-center justify-center mr-4">
+                                    <i class="fas fa-chart-line text-xl"></i>
+                                </div>
+                                <div>
+                                    <h4 class="text-white font-bold text-sm">Stat conversion</h4>
+                                    <span class="text-[9px] font-black text-blue-400 uppercase tracking-widest animate-pulse">In Development</span>
+                                </div>
+                            </div>
+                            <!-- Equipment -->
+                            <div class="bg-slate-900/20 border border-slate-800 p-5 rounded-2xl flex items-center opacity-60">
+                                <div class="w-12 h-12 rounded-xl bg-slate-800 text-slate-500 flex items-center justify-center mr-4">
+                                    <i class="fas fa-shield-alt text-xl"></i>
+                                </div>
+                                <div>
+                                    <h4 class="text-slate-300 font-bold text-sm">Equipment</h4>
+                                    <span class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Planned</span>
+                                </div>
+                            </div>
+                            <!-- Medal -->
+                            <div class="bg-slate-900/20 border border-slate-800 p-5 rounded-2xl flex items-center opacity-60">
+                                <div class="w-12 h-12 rounded-xl bg-slate-800 text-slate-500 flex items-center justify-center mr-4">
+                                    <i class="fas fa-medal text-xl"></i>
+                                </div>
+                                <div>
+                                    <h4 class="text-slate-300 font-bold text-sm">Medal & Sigil</h4>
+                                    <span class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Planned</span>
+                                </div>
+                            </div>
+                            <!-- Guild Skill -->
+                            <div class="bg-slate-900/20 border border-slate-800 p-5 rounded-2xl flex items-center opacity-60">
+                                <div class="w-12 h-12 rounded-xl bg-slate-800 text-slate-500 flex items-center justify-center mr-4">
+                                    <i class="fas fa-users text-xl"></i>
+                                </div>
+                                <div>
+                                    <h4 class="text-slate-300 font-bold text-sm">Guild Skill</h4>
+                                    <span class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Planned</span>
+                                </div>
+                            </div>
+                            <!-- Cards -->
+                            <div class="bg-slate-900/20 border border-slate-800 p-5 rounded-2xl flex items-center opacity-60">
+                                <div class="w-12 h-12 rounded-xl bg-slate-800 text-slate-500 flex items-center justify-center mr-4">
+                                    <i class="fas fa-clone text-xl"></i>
+                                </div>
+                                <div>
+                                    <h4 class="text-slate-300 font-bold text-sm">Card Database</h4>
+                                    <span class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Planned</span>
                                 </div>
                             </div>
                         </div>
-                        <div class="md:w-1/2 p-12 bg-white flex flex-col items-center justify-center">
-                            <div class="relative group">
-                                <div class="absolute -inset-4 bg-gradient-to-tr from-ro-blue to-ro-accent rounded-[2rem] opacity-20 group-hover:opacity-40 transition-opacity blur-2xl"></div>
-                                <img src="data/support me/Touch n Go QR.png" alt="Touch n Go QR Code" class="relative max-w-xs w-full shadow-2xl rounded-2xl border-4 border-slate-200 rotate-1 group-hover:rotate-0 transition-transform duration-500">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
+                    <!-- Support Card -->
+                    <div class="bg-white rounded-3xl overflow-hidden shadow-2xl flex flex-col items-center justify-center p-8 lg:p-12">
+                        <div class="text-center mb-8">
+                            <h2 class="text-2xl font-black text-slate-900 mb-2">Buy the Researcher a Coffee</h2>
+                            <p class="text-slate-500 text-sm">Help keep the servers running and data updated!</p>
+                        </div>
+                        <div class="relative group">
+                            <div class="absolute -inset-4 bg-gradient-to-tr from-ro-blue to-ro-accent rounded-[2rem] opacity-20 group-hover:opacity-40 transition-opacity blur-2xl"></div>
+                            <img src="data/support me/Touch n Go QR.png" alt="Touch n Go QR Code" class="relative max-w-[240px] w-full shadow-2xl rounded-2xl border-4 border-slate-100 rotate-1 group-hover:rotate-0 transition-transform duration-500">
+                        </div>
+                        <p class="mt-8 text-[10px] font-black uppercase tracking-widest text-slate-400">Scan via Touch n Go eWallet</p>
+                    </div>
+
+                    <!-- Contribution Card -->
+                    <div class="bg-slate-800/50 border border-slate-700 rounded-3xl p-8 lg:p-12 flex flex-col justify-center">
+                        <div class="w-16 h-16 bg-ro-accent rounded-2xl flex items-center justify-center mb-8 shadow-lg shadow-orange-500/20">
+                            <i class="fas fa-flask text-white text-2xl"></i>
+                        </div>
+                        <h2 class="text-3xl font-black text-white mb-6">Contribute Data</h2>
+                        <p class="text-slate-400 leading-relaxed mb-8">
+                            This tool is built on personal research. Since game resources are scarce, your screenshots of high-tier feather stats or set bonuses are invaluable!
+                        </p>
+                        <div class="space-y-4 mb-10">
+                            <div class="flex items-center text-sm font-bold text-slate-300">
+                                <div class="w-6 h-6 rounded-full bg-green-500/10 text-green-400 flex items-center justify-center mr-3 text-[10px]"><i class="fas fa-check"></i></div>
+                                Report incorrect stat values
                             </div>
-                            <p class="mt-10 text-[10px] font-black uppercase tracking-widest text-slate-500">Scan to Support</p>
+                            <div class="flex items-center text-sm font-bold text-slate-300">
+                                <div class="w-6 h-6 rounded-full bg-blue-500/10 text-blue-400 flex items-center justify-center mr-3 text-[10px]"><i class="fas fa-check"></i></div>
+                                Submit Tier 15+ data
+                            </div>
+                        </div>
+                        <div class="flex flex-col sm:flex-row gap-3">
+                            <a href="mailto:blokd6@gmail.com" class="ro-button ro-button-primary px-8 py-4 rounded-xl flex-1 shadow-lg shadow-blue-500/20">
+                                <i class="fas fa-envelope mr-2 text-lg"></i>Email Research Data
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -407,10 +493,26 @@
         </div>
     </main>
 
+    <!-- Mobile Bottom Navigation -->
+    <div class="lg:hidden fixed bottom-0 left-0 right-0 h-16 glass-nav z-50 flex items-center px-4">
+        <button class="mobile-tab-btn active" data-target="tab-feather">
+            <i class="fas fa-feather"></i>
+            <span>Statue</span>
+        </button>
+        <button class="mobile-tab-btn opacity-30 cursor-not-allowed">
+            <i class="fas fa-shield-alt"></i>
+            <span>Equip</span>
+        </button>
+        <button class="mobile-tab-btn" data-target="tab-support">
+            <i class="fas fa-heart"></i>
+            <span>Support</span>
+        </button>
+    </div>
+
     <!-- Inventory Modal -->
     <div id="inv-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
         <div class="bg-slate-800 border border-slate-700 rounded-3xl w-full max-w-2xl max-h-[85vh] flex flex-col shadow-2xl overflow-hidden animate-in">
-            <div class="bg-slate-900 px-8 py-6 flex justify-between items-center border-b border-slate-700">
+            <div class="bg-slate-900 px-6 lg:px-8 py-4 lg:py-6 flex justify-between items-center border-b border-slate-700">
                 <div class="flex items-center">
                     <div class="w-10 h-10 bg-green-500 rounded-xl flex items-center justify-center mr-4 shadow-lg shadow-green-500/20">
                         <i class="fas fa-box text-white text-sm"></i>
@@ -424,14 +526,12 @@
                     <i class="fas fa-times text-xs"></i>
                 </button>
             </div>
-            <div class="p-8 overflow-y-auto bg-slate-800/50" id="inv-list">
-                <div class="grid grid-cols-2 sm:grid-cols-3 gap-4" id="inv-inputs">
-                    <!-- Rendered via JS -->
-                </div>
+            <div class="p-4 lg:p-8 overflow-y-auto bg-slate-800/50" id="inv-list">
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 lg:gap-4" id="inv-inputs"></div>
             </div>
-            <div class="px-8 py-6 bg-slate-900 border-t border-slate-700 flex justify-end items-center">
-                <span class="mr-auto text-[10px] font-bold text-slate-500 uppercase italic">Changes are saved automatically</span>
-                <button id="save-inv" class="ro-button ro-button-primary px-8 py-3">
+            <div class="px-6 lg:px-8 py-4 lg:py-6 bg-slate-900 border-t border-slate-700 flex justify-end items-center">
+                <span class="hidden sm:block mr-auto text-[10px] font-bold text-slate-500 uppercase italic">Changes are saved automatically</span>
+                <button id="save-inv" class="ro-button ro-button-primary px-8 py-3 rounded-xl w-full sm:w-auto">
                     Confirm & Save
                 </button>
             </div>

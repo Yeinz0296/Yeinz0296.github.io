@@ -426,27 +426,99 @@ function applyPreset() {
 }
 
 function setupEventListeners() {
+    // Desktop Tab Buttons
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.onclick = (e) => {
             e.preventDefault(); if(btn.classList.contains('cursor-not-allowed')) return;
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active');
+            document.querySelectorAll('.tab-btn, .mobile-tab-btn').forEach(b => b.classList.remove('active')); 
+            btn.classList.add('active');
+            
+            // Sync mobile tab btn
+            const mobBtn = document.querySelector(`.mobile-tab-btn[data-target="${btn.dataset.target}"]`);
+            if(mobBtn) mobBtn.classList.add('active');
+
             document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden')); 
             const target = document.getElementById(btn.dataset.target);
             target.classList.remove('hidden');
             target.classList.add('animate-in');
+            window.scrollTo(0, 0);
         };
     });
 
-    document.getElementById('clear-all-btn').onclick = () => { if (confirm('Are you sure you want to clear the entire build?')) { initBuildState(); document.getElementById('class-preset').value = 'none'; state.currentPreset = 'none'; renderStatues(); updateSummary(); } };
+    // Mobile Bottom Navigation
+    document.querySelectorAll('.mobile-tab-btn').forEach(btn => {
+        btn.onclick = (e) => {
+            e.preventDefault(); if(btn.classList.contains('cursor-not-allowed')) return;
+            document.querySelectorAll('.tab-btn, .mobile-tab-btn').forEach(b => b.classList.remove('active')); 
+            btn.classList.add('active');
+
+            // Sync desktop tab btn
+            const deskBtn = document.querySelector(`.tab-btn[data-target="${btn.dataset.target}"]`);
+            if(deskBtn) deskBtn.classList.add('active');
+
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden')); 
+            const target = document.getElementById(btn.dataset.target);
+            target.classList.remove('hidden');
+            target.classList.add('animate-in');
+            window.scrollTo(0, 0);
+        };
+    });
+
+    // Mobile View Toggle (Statues vs Attributes)
+    document.querySelectorAll('.view-toggle-btn').forEach(btn => {
+        btn.onclick = () => {
+            document.querySelectorAll('.view-toggle-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            
+            if (btn.dataset.view === 'statues') {
+                document.getElementById('view-statues').classList.add('mobile-nav-active');
+                document.getElementById('view-statues').classList.remove('mobile-nav-hidden');
+                document.getElementById('view-summary').classList.add('mobile-nav-hidden');
+                document.getElementById('view-summary').classList.remove('mobile-nav-active');
+            } else {
+                document.getElementById('view-summary').classList.add('mobile-nav-active');
+                document.getElementById('view-summary').classList.remove('mobile-nav-hidden');
+                document.getElementById('view-statues').classList.add('mobile-nav-hidden');
+                document.getElementById('view-statues').classList.remove('mobile-nav-active');
+            }
+            window.scrollTo(0, 0);
+        };
+    });
+
+    // Shared UI Actions
+    const clearAll = () => { if (confirm('Are you sure you want to clear the entire build?')) { initBuildState(); document.getElementById('class-preset').value = 'none'; state.currentPreset = 'none'; renderStatues(); updateSummary(); } };
+    const openInv = () => {
+        const listEl = document.getElementById('inv-list');
+        if (!document.getElementById('inv-search')) {
+            const searchContainer = document.createElement('div');
+            searchContainer.className = 'mb-6 sticky top-0 bg-slate-900/80 backdrop-blur-md pt-2 pb-4 z-10 border-b border-slate-700';
+            searchContainer.innerHTML = `
+                <div class="relative">
+                    <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-500"></i>
+                    <input type="text" id="inv-search" placeholder="Search feathers..." 
+                           class="w-full pl-11 pr-4 py-3 bg-slate-800 border border-slate-700 rounded-xl focus:ring-1 focus:ring-blue-500/50 outline-none text-white text-sm">
+                </div>`;
+            listEl.prepend(searchContainer);
+            document.getElementById('inv-search').oninput = (e) => updateInventoryModal(e.target.value);
+        }
+        updateInventoryModal();
+        document.getElementById('inv-modal').classList.remove('hidden'); 
+        document.getElementById('inv-modal').classList.add('flex', 'animate-in');
+    };
+
+    document.getElementById('clear-all-btn').onclick = clearAll;
     document.getElementById('share-btn').onclick = generateShareUrl;
+    document.getElementById('share-btn-mob').onclick = generateShareUrl;
     document.getElementById('print-btn').onclick = () => window.print();
+    document.getElementById('inv-btn').onclick = openInv;
+    document.getElementById('inv-btn-mob').onclick = openInv;
+
     document.getElementById('optimize-btn').onclick = () => {
         if (state.currentPreset === 'none') { alert("Please select a Class Build first."); return; }
         applyPreset();
-        // Visual feedback
         const btn = document.getElementById('optimize-btn');
         const originalText = btn.innerHTML;
-        btn.innerHTML = '<i class="fas fa-check mr-1"></i>Applied';
+        btn.innerHTML = '<i class="fas fa-check mr-2"></i>Applied';
         setTimeout(() => btn.innerHTML = originalText, 2000);
     };
 
@@ -461,32 +533,8 @@ function setupEventListeners() {
     };
     document.getElementById('class-preset').onchange = applyPreset;
 
-    document.getElementById('inv-btn').onclick = () => {
-        // Add search input to modal if it doesn't exist
-        const listEl = document.getElementById('inv-list');
-        if (!document.getElementById('inv-search')) {
-            const searchContainer = document.createElement('div');
-            searchContainer.className = 'mb-4 sticky top-0 bg-white pt-2 pb-4 z-10 border-b';
-            searchContainer.innerHTML = `
-                <div class="relative">
-                    <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                    <input type="text" id="inv-search" placeholder="Search feathers..." 
-                           class="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-100 outline-none">
-                </div>`;
-            listEl.prepend(searchContainer);
-            document.getElementById('inv-search').oninput = (e) => updateInventoryModal(e.target.value);
-        }
-        updateInventoryModal();
-        document.getElementById('inv-modal').classList.remove('hidden'); 
-        document.getElementById('inv-modal').classList.add('flex', 'animate-in');
-    };
-    
     document.getElementById('close-inv').onclick = () => document.getElementById('inv-modal').classList.replace('flex', 'hidden');
     document.getElementById('save-inv').onclick = () => {
-        // We need to capture ALL inputs, even those filtered out
-        // However, the current DOM only has filtered ones. 
-        // Better to update state on input change or use a better strategy.
-        // For now, let's update state for whatever is CURRENTLY in the DOM
         document.querySelectorAll('.inv-input').forEach(input => { 
             state.inventory[input.dataset.feather] = parseInt(input.value) || 0; 
         });
@@ -494,7 +542,7 @@ function setupEventListeners() {
         updateSummary();
     };
 
-    // Global click handler
+    // Global click handler for dynamic elements
     document.addEventListener('click', (e) => {
         const clearBtn = e.target.closest('.clear-set-btn');
         if (clearBtn) {
