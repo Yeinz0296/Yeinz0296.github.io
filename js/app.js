@@ -10,7 +10,19 @@ const state = {
     },
     sets: {
         atk: ['Duel', 'Rune', 'Weapon', 'Intimidation', 'Omni'],
-        def: ['Wisdom', 'Fortitude', 'Mist', 'Relic', 'Conqueror']
+        def: ['Wisdom', 'Fortitude', 'Mist', 'Relic', 'Conqueror'],
+        order: [
+            { name: 'Duel', type: 'atk' },
+            { name: 'Wisdom', type: 'def' },
+            { name: 'Rune', type: 'atk' },
+            { name: 'Fortitude', type: 'def' },
+            { name: 'Weapon', type: 'atk' },
+            { name: 'Mist', type: 'def' },
+            { name: 'Intimidation', type: 'atk' },
+            { name: 'Relic', type: 'def' },
+            { name: 'Omni', type: 'atk' },
+            { name: 'Conqueror', type: 'def' }
+        ]
     },
     unlockedSets: {
         atk: ['Duel'],
@@ -169,12 +181,15 @@ function renderStatues() {
         const borderColor = type === 'atk' ? 'border-red-200' : 'border-blue-200';
         const headerColor = type === 'atk' ? 'bg-red-50 text-red-800' : 'bg-blue-50 text-blue-800';
 
+        // Get currently selected feathers in this set to filter them out from other slots
+        const selectedInSet = state.build[setName].map(s => s.feather).filter(f => f !== '');
+
         let html = `
-        <div class="ro-window overflow-hidden mb-6">
-            <div class="ro-header flex justify-between items-center">
+        <div class="ro-window ${type === 'atk' ? 'ro-window-atk' : 'ro-window-def'} overflow-hidden mb-6">
+            <div class="ro-header ${type === 'atk' ? 'ro-header-atk' : 'ro-header-def'} flex justify-between items-center">
                 <div class="flex items-center space-x-3">
                     <span class="text-sm font-bold tracking-wide tracking-wider uppercase">${setName} Statue</span>
-                    <span class="text-[10px] font-bold px-2 py-0.5 bg-white text-ro-blue rounded-sm shadow-sm" id="set-bonus-${setName}">NO BONUS</span>
+                    <span class="text-[10px] font-bold px-2 py-0.5 bg-white ${type === 'atk' ? 'text-red-600' : 'text-ro-blue'} rounded-sm shadow-sm" id="set-bonus-${setName}">NO BONUS</span>
                 </div>
                 <div class="flex items-center space-x-4">
                     <div class="text-right">
@@ -198,6 +213,10 @@ function renderStatues() {
                     <select class="w-full text-xs border-ro-border rounded bg-white py-1 px-1 mb-2 feather-select" data-set="${setName}" data-slot="${i}">
                         <option value="">-- Empty --</option>
                         ${availableFeathers.map(f => {
+                            // Hide if already selected in ANOTHER slot
+                            const isSelectedElsewhere = selectedInSet.includes(f) && slot.feather !== f;
+                            if (isSelectedElsewhere) return '';
+
                             const isMix = state.uniqueFeathers.mix.includes(f);
                             const mixTag = isMix ? ' (Mix)' : '';
                             const selected = slot.feather === f ? 'selected' : '';
@@ -230,8 +249,9 @@ function renderStatues() {
     };
 
     let fullHtml = '';
-    state.sets.atk.forEach(s => fullHtml += renderSet(s, 'atk'));
-    state.sets.def.forEach(s => fullHtml += renderSet(s, 'def'));
+    state.sets.order.forEach(set => {
+        fullHtml += renderSet(set.name, set.type);
+    });
     container.innerHTML = fullHtml;
 }
 
@@ -480,6 +500,8 @@ function setupEventListeners() {
         if (e.target.classList.contains('feather-select')) {
             const { set, slot } = e.target.dataset;
             state.build[set][slot].feather = e.target.value;
+            // Re-render to update the available list for other slots
+            renderStatues();
             updateSummary();
         }
         if (e.target.classList.contains('tier-select')) {
