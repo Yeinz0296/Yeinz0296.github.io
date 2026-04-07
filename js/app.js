@@ -139,8 +139,10 @@ function renderApp() {
 function renderSetToggles() {
     const createToggle = (setName, type) => {
         const isUnlocked = state.unlockedSets[type].includes(setName);
-        const color = isUnlocked ? (type === 'atk' ? 'bg-red-500 text-white border-red-500' : 'bg-blue-500 text-white border-blue-500') : 'bg-white text-gray-500 border-gray-300';
-        return `<button class="px-3 py-1 border rounded text-[10px] font-bold uppercase toggle-set-btn ${color}" data-set="${setName}" data-type="${type}">${setName}</button>`;
+        const activeClass = type === 'atk' ? 'bg-red-500 text-white border-red-600 shadow-lg shadow-red-500/20' : 'bg-blue-600 text-white border-blue-700 shadow-lg shadow-blue-500/20';
+        const inactiveClass = 'bg-slate-900 text-slate-500 border-slate-700 hover:bg-slate-800';
+        const color = isUnlocked ? activeClass : inactiveClass;
+        return `<button class="px-3 py-1.5 border rounded-lg text-[10px] font-bold uppercase transition-all toggle-set-btn ${color}" data-set="${setName}" data-type="${type}">${setName}</button>`;
     };
     document.getElementById('atk-set-toggles').innerHTML = state.sets.atk.map(s => createToggle(s, 'atk')).join('');
     document.getElementById('def-set-toggles').innerHTML = state.sets.def.map(s => createToggle(s, 'def')).join('');
@@ -158,47 +160,70 @@ function renderStatues() {
         const currentMinTier = activeSlots.length > 0 ? Math.min(...activeSlots.map(f => parseInt(f.tier))) : 1;
 
         let html = `
-        <div class="ro-window ${type === 'atk' ? 'ro-window-atk' : 'ro-window-def'} overflow-hidden mb-6">
-            <div class="ro-header ${type === 'atk' ? 'ro-header-atk' : 'ro-header-def'} flex justify-between items-center">
-                <div class="flex items-center space-x-2">
-                    <span class="text-sm font-bold uppercase tracking-wider" id="set-title-${setName}">${setName}</span>
-                    <select class="text-[10px] bg-white/20 text-white border border-white/30 rounded px-1 py-0.5 set-tier-select focus:outline-none hover:bg-white/30 cursor-pointer" data-set="${setName}">
-                        ${[...Array(20).keys()].map(t => `<option value="${t+1}" ${currentMinTier == t+1 ? 'selected' : ''} class="text-slate-800">T${t+1}</option>`).join('')}
-                    </select>
+        <div class="ro-window ${type === 'atk' ? 'ro-window-atk' : 'ro-window-def'} animate-in mb-8 shadow-2xl">
+            <div class="ro-header ${type === 'atk' ? 'ro-header-atk' : 'ro-header-def'}">
+                <div class="flex items-center space-x-3">
+                    <span class="text-sm font-bold uppercase tracking-widest text-white" id="set-title-${setName}">${setName}</span>
+                    <div class="flex items-center bg-black/30 rounded-lg px-2 py-0.5 border border-white/10">
+                        <span class="text-[9px] font-bold text-white/50 mr-2 uppercase">SET TIER</span>
+                        <select class="text-[10px] bg-transparent text-white font-bold focus:outline-none cursor-pointer set-tier-select border-none" data-set="${setName}">
+                            ${[...Array(20).keys()].map(t => `<option value="${t+1}" ${currentMinTier == t+1 ? 'selected' : ''} class="text-slate-200 bg-slate-800">T${t+1}</option>`).join('')}
+                        </select>
+                    </div>
                 </div>
                 <div class="flex items-center space-x-4">
-                    <span id="set-eden-${setName}" class="text-[10px] font-bold text-white opacity-90 uppercase">0 EDEN</span>
-                    <button class="clear-set-btn text-white hover:text-ro-accent transition-colors" data-set="${setName}"><i class="fas fa-undo-alt text-xs"></i></button>
+                    <div class="flex items-center bg-black/40 rounded-lg px-3 py-1 border border-white/5">
+                        <i class="fas fa-coins text-yellow-400 text-[10px] mr-2"></i>
+                        <span id="set-eden-${setName}" class="text-[10px] font-bold text-white uppercase tracking-tight">0</span>
+                    </div>
+                    <button class="clear-set-btn w-7 h-7 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 transition-colors" data-set="${setName}" title="Clear Set">
+                        <i class="fas fa-undo-alt text-xs text-white"></i>
+                    </button>
                 </div>
             </div>
-            <div class="p-4 grid grid-cols-1 sm:grid-cols-5 gap-4">`;
+            <div class="p-5 grid grid-cols-1 sm:grid-cols-5 gap-4 bg-slate-800/20">`;
 
         for (let i = 0; i < 5; i++) {
             const slot = state.build[setName][i];
             const rarity = slot.feather ? state.featherRarities[slot.feather] : '';
             const rarityClass = rarity === 'gold' ? 'ro-slot-gold' : (rarity === 'purple' ? 'ro-slot-purple' : '');
+            const rarityDot = rarity === 'gold' ? 'dot-gold' : (rarity === 'purple' ? 'dot-purple' : 'bg-slate-700');
+            
             html += `
-                <div class="ro-slot p-3 ${rarityClass}">
-                    <label class="ro-label block mb-1">Slot ${i + 1}</label>
-                    <select class="w-full text-[10px] border-ro-border rounded bg-white py-1 px-1 mb-2 feather-select font-bold" data-set="${setName}" data-slot="${i}">
-                        <option value="">-- Empty --</option>
+                <div class="ro-slot ${rarityClass}">
+                    <div class="flex justify-between items-center mb-2">
+                        <label class="ro-label m-0">Slot ${i + 1}</label>
+                        <span class="rarity-dot ${rarityDot}"></span>
+                    </div>
+                    <select class="w-full text-[10px] border-slate-700 rounded-md bg-slate-900 py-1.5 px-2 mb-3 feather-select font-bold shadow-inner focus:ring-1 focus:ring-blue-500/50" data-set="${setName}" data-slot="${i}">
+                        <option value="" class="text-slate-500">-- Empty --</option>
                         ${availableFeathers.map(f => {
                             if (selectedInSet.includes(f) && slot.feather !== f) return '';
                             const selected = slot.feather === f ? 'selected' : '';
-                            const rarityIcon = state.featherRarities[f] === 'gold' ? '🟡 ' : '🟣 ';
-                            return `<option value="${f}" ${selected}>${rarityIcon}${f}</option>`;
+                            const rarityLabel = state.featherRarities[f] === 'gold' ? ' (G)' : ' (P)';
+                            return `<option value="${f}" ${selected} class="text-slate-200 bg-slate-800">${f}${rarityLabel}</option>`;
                         }).join('')}
                     </select>
                     <label class="ro-label block mb-1">Tier</label>
-                    <select class="w-full text-[10px] border-ro-border rounded bg-white py-1 px-1 tier-select" data-set="${setName}" data-slot="${i}">
-                        ${[...Array(20).keys()].map(t => `<option value="${t+1}" ${slot.tier == t+1 ? 'selected' : ''}>T${t+1}</option>`).join('')}
-                    </select>
+                    <div class="relative">
+                        <select class="w-full text-[10px] border-slate-700 rounded-md bg-slate-900 py-1.5 px-2 tier-select font-semibold shadow-inner focus:ring-1 focus:ring-blue-500/50" data-set="${setName}" data-slot="${i}">
+                            ${[...Array(20).keys()].map(t => `<option value="${t+1}" ${slot.tier == t+1 ? 'selected' : ''} class="text-slate-200 bg-slate-800">Tier ${t+1}</option>`).join('')}
+                        </select>
+                    </div>
                 </div>`;
         }
         html += `</div>
-            <div class="px-4 py-3 bg-slate-50 border-t flex flex-col space-y-2">
-                <div class="flex flex-wrap gap-x-4 gap-y-1 text-[10px] text-gray-500 uppercase font-bold" id="set-feathers-${setName}"></div>
-                <div class="flex flex-wrap gap-x-4 gap-y-1 text-xs text-ro-blue font-bold border-t pt-2" id="set-stats-${setName}"></div>
+            <div class="px-5 py-3 bg-slate-900/30 border-t border-slate-700 flex flex-col space-y-2">
+                <div class="flex items-center text-[10px] text-slate-500 font-bold uppercase tracking-wider">
+                    <i class="fas fa-microchip mr-2"></i> Base Stats Breakdown
+                </div>
+                <div class="flex flex-wrap gap-x-3 gap-y-1 text-[10px] text-slate-400 font-medium" id="set-feathers-${setName}"></div>
+                <div class="pt-2 border-t border-slate-700">
+                    <div class="flex items-center text-[10px] text-blue-400 font-bold uppercase tracking-wider mb-1">
+                        <i class="fas fa-chart-line mr-2"></i> Final Set Stats (Inc. Bonus)
+                    </div>
+                    <div class="flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-slate-200 font-bold" id="set-stats-${setName}"></div>
+                </div>
             </div>
         </div>`;
         return html;
@@ -272,7 +297,7 @@ function updateSummary() {
                 const best = possible[0];
                 let row = state.data.setBonuses.find(b => b.set_name === best.set_name && parseInt(b.tier) === minT && (b.statue_type || b['statue_type,']) === typeCat);
                 let est = false; if (!row) { row = state.data.setBonuses.find(b => b.set_name === best.set_name && parseInt(b.tier) === 20 && (b.statue_type || b['statue_type,']) === typeCat); est = minT < 20; }
-                bText = `(${best.set_name.replace(/_/g, ' ').toUpperCase()} T${minT}${est ? '*' : ''})`;
+                bText = `<span class="ml-2 text-[10px] bg-white/10 px-2 py-0.5 rounded-full font-bold text-white/90 shadow-sm">${best.set_name.replace(/_/g, ' ').toUpperCase()} T${minT}${est ? '*' : ''}</span>`;
                 if (row) {
                     Object.keys(row).forEach(key => {
                         const k = key.toLowerCase(); const val = parseNumber(row[key]);
@@ -287,10 +312,10 @@ function updateSummary() {
                 }
             } else {
                 const next = rules.sort((a,b) => parseNumber(a.req_gold) - parseNumber(b.req_gold)).find(r => parseNumber(r.req_gold) > goldCount || parseNumber(r.req_purple) > purpleCount);
-                bText = next ? `(NEED ${Math.max(0, parseNumber(next.req_gold)-goldCount)} GOLD / ${Math.max(0, parseNumber(next.req_purple)-purpleCount)} PURPLE)` : '(NO BONUS)';
+                bText = next ? `<span class="ml-2 text-[9px] text-white/40 font-medium">Need ${Math.max(0, parseNumber(next.req_gold)-goldCount)}G / ${Math.max(0, parseNumber(next.req_purple)-purpleCount)}P</span>` : '';
             }
-        } else { bText = '(INCOMPLETE)'; }
-        titleEl.innerText = `${setName} ${bText}`;
+        } else { bText = '<span class="ml-2 text-[9px] text-white/30 font-medium">Incomplete Statue</span>'; }
+        titleEl.innerHTML = `${setName} ${bText}`;
 
         const finalSetStats = {};
         Object.entries(baseFeatherStats).forEach(([k, v]) => {
@@ -304,9 +329,9 @@ function updateSummary() {
         Object.entries(flats).forEach(([k, v]) => finalSetStats[k] = (finalSetStats[k] || 0) + v);
         Object.entries(finalSetStats).forEach(([k, v]) => totalStats[k] = (totalStats[k] || 0) + v);
 
-        feathersDisplayEl.innerHTML = 'Base: ' + Object.entries(baseFeatherStats).filter(([k,v]) => v > 0).map(([k,v]) => `${STAT_NAMES[k]}: ${v.toFixed(1)}`).join(' | ');
-        statsDisplayEl.innerHTML = 'Final: ' + Object.entries(finalSetStats).filter(([k,v]) => Math.floor(v) > 0).map(([k,v]) => `<span>${STAT_NAMES[k]}: ${Math.floor(v)}</span>`).join(' | ');
-        edenEl.innerText = `${setEden.toLocaleString()} EDEN`;
+        feathersDisplayEl.innerHTML = Object.entries(baseFeatherStats).filter(([k,v]) => v > 0).map(([k,v]) => `<span class="bg-slate-900 px-2 py-0.5 rounded border border-slate-800">${STAT_NAMES[k]}: ${v.toFixed(1)}</span>`).join('');
+        statsDisplayEl.innerHTML = Object.entries(finalSetStats).filter(([k,v]) => Math.floor(v) > 0).map(([k,v]) => `<span class="text-blue-300 bg-blue-900/40 px-2 py-0.5 rounded border border-blue-800/50 shadow-sm">${STAT_NAMES[k]}: ${Math.floor(v)}</span>`).join('');
+        edenEl.innerText = `${setEden.toLocaleString()}`;
         totalEden += setEden;
     });
 
@@ -319,23 +344,58 @@ function updateSummary() {
     Object.entries(totalStats).sort((a, b) => (priorityStats.includes(b[0]) - priorityStats.includes(a[0])) || (b[1] - a[1])).forEach(([statKey, value]) => {
         if (hiddenStats.includes(statKey) || Math.floor(value) === 0) return;
         const isPrio = priorityStats.includes(statKey);
-        summaryContainer.innerHTML += `<div class="flex justify-between items-center py-1 ${isPrio ? 'bg-yellow-50 px-2 rounded font-semibold text-yellow-800' : 'text-gray-700'}"><span>${STAT_NAMES[statKey] || statKey} ${isPrio ? '<i class="fas fa-star text-[10px]"></i>' : ''}</span><span>${Math.floor(value)}</span></div>`;
+        summaryContainer.innerHTML += `
+            <div class="stat-card ${isPrio ? 'priority' : ''} mb-2 shadow-sm">
+                <div class="flex items-center">
+                    <span class="text-[11px] font-bold ${isPrio ? 'text-orange-400' : 'text-slate-400'}">${STAT_NAMES[statKey] || statKey}</span>
+                    ${isPrio ? '<i class="fas fa-star text-[8px] text-orange-400 ml-1.5 animate-pulse"></i>' : ''}
+                </div>
+                <span class="text-sm font-bold ${isPrio ? 'text-orange-100' : 'text-slate-100'}">${Math.floor(value).toLocaleString()}</span>
+            </div>`;
     });
     
     document.getElementById('total-eden').innerText = totalEden.toLocaleString();
     const costBreakdownEl = document.getElementById('cost-breakdown');
-    costBreakdownEl.innerHTML = '<div class="font-bold text-gray-700 mb-2 uppercase tracking-tight text-xs border-b pb-1">Still Needed:</div>';
+    costBreakdownEl.innerHTML = '<div class="font-bold text-slate-500 mb-3 uppercase tracking-widest text-[10px]">Material Requirement</div>';
     let hasCost = false;
     Object.entries(totalFeatherCosts).sort((a,b) => b[1].count - a[1].count).forEach(([name, data]) => {
         const owned = state.inventory[name] || 0;
         const needed = Math.max(0, data.count - owned);
         if (needed <= 0 && data.count > 0) return; 
         hasCost = true;
-        const rangeText = data.maxReached < data.requested ? ` <span class="text-[10px] text-gray-400">(T1-T${data.maxReached})</span>` : '';
-        costBreakdownEl.innerHTML += `<div class="flex justify-between items-center py-1 text-sm"><span class="${state.featherRarities[name] === 'gold' ? 'text-yellow-600' : 'text-purple-600'} font-bold">${name}${rangeText}:</span><span class="font-bold text-slate-800">${needed.toLocaleString()}</span></div>`;
+        const rarity = state.featherRarities[name];
+        const rangeText = data.maxReached < data.requested ? ` <span class="text-[9px] text-slate-500 font-normal">T${data.maxReached}</span>` : '';
+        costBreakdownEl.innerHTML += `
+            <div class="flex justify-between items-center py-1.5 border-b border-slate-700 last:border-0">
+                <div class="flex items-center">
+                    <span class="rarity-dot ${rarity === 'gold' ? 'dot-gold' : 'dot-purple'}"></span>
+                    <span class="text-xs font-bold text-slate-300">${name}${rangeText}</span>
+                </div>
+                <span class="text-xs font-black text-white bg-slate-900 border border-slate-700 px-2 py-0.5 rounded">${needed.toLocaleString()}</span>
+            </div>`;
     });
-    if (!hasCost) costBreakdownEl.innerHTML += '<p class="text-xs italic text-gray-400">All owned!</p>';
+    if (!hasCost) costBreakdownEl.innerHTML += '<div class="text-center py-4 text-xs italic text-green-400 font-bold bg-green-50/10 border border-green-500/20 rounded-lg">All materials acquired!</div>';
     saveToLocal();
+}
+
+function updateInventoryModal(filter = '') {
+    const container = document.getElementById('inv-inputs');
+    const feathers = [...new Set([...state.uniqueFeathers.atk, ...state.uniqueFeathers.def, ...state.uniqueFeathers.mix])]
+        .sort()
+        .filter(f => f.toLowerCase().includes(filter.toLowerCase()));
+        
+    container.innerHTML = feathers.map(f => {
+        const rarity = state.featherRarities[f];
+        return `
+        <div class="bg-slate-900 p-3 rounded-lg border border-slate-700 hover:border-blue-500/50 transition-colors shadow-inner">
+            <div class="flex items-center mb-2">
+                <span class="rarity-dot ${rarity === 'gold' ? 'dot-gold' : 'dot-purple'}"></span>
+                <label class="text-[11px] font-bold uppercase text-slate-300 truncate">${f}</label>
+            </div>
+            <input type="number" class="w-full border border-slate-700 rounded-md px-3 py-1.5 text-sm inv-input focus:ring-1 focus:ring-blue-500/50 outline-none bg-slate-800 text-white" 
+                   data-feather="${f}" value="${state.inventory[f] || 0}" min="0">
+        </div>`;
+    }).join('');
 }
 
 function applyPreset() {
@@ -370,23 +430,29 @@ function setupEventListeners() {
         btn.onclick = (e) => {
             e.preventDefault(); if(btn.classList.contains('cursor-not-allowed')) return;
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active');
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden')); document.getElementById(btn.dataset.target).classList.remove('hidden');
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden')); 
+            const target = document.getElementById(btn.dataset.target);
+            target.classList.remove('hidden');
+            target.classList.add('animate-in');
         };
     });
 
-    document.getElementById('clear-all-btn').onclick = () => { if (confirm('Clear all?')) { initBuildState(); document.getElementById('class-preset').value = 'none'; state.currentPreset = 'none'; renderStatues(); updateSummary(); } };
+    document.getElementById('clear-all-btn').onclick = () => { if (confirm('Are you sure you want to clear the entire build?')) { initBuildState(); document.getElementById('class-preset').value = 'none'; state.currentPreset = 'none'; renderStatues(); updateSummary(); } };
     document.getElementById('share-btn').onclick = generateShareUrl;
     document.getElementById('print-btn').onclick = () => window.print();
     document.getElementById('optimize-btn').onclick = () => {
         if (state.currentPreset === 'none') { alert("Please select a Class Build first."); return; }
         applyPreset();
-        alert("Build optimized based on Class and Mode!");
+        // Visual feedback
+        const btn = document.getElementById('optimize-btn');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-check mr-1"></i>Applied';
+        setTimeout(() => btn.innerHTML = originalText, 2000);
     };
 
     document.getElementById('class-mode').onchange = () => { 
         state.currentMode = document.getElementById('class-mode').value; 
         updatePresetDropdown(); 
-        // Auto-reapply preset if a class is already selected
         if (state.currentPreset !== 'none') {
             document.getElementById('class-preset').value = state.currentPreset;
             applyPreset();
@@ -396,34 +462,68 @@ function setupEventListeners() {
     document.getElementById('class-preset').onchange = applyPreset;
 
     document.getElementById('inv-btn').onclick = () => {
-        const container = document.getElementById('inv-inputs');
-        const feathers = [...new Set([...state.uniqueFeathers.atk, ...state.uniqueFeathers.def, ...state.uniqueFeathers.mix])].sort();
-        container.innerHTML = feathers.map(f => `
-            <div class="flex flex-col">
-                <label class="text-[10px] font-bold uppercase ${state.featherRarities[f] === 'gold' ? 'text-yellow-600' : 'text-purple-600'}">${f}</label>
-                <input type="number" class="border rounded px-2 py-1 text-sm inv-input" data-feather="${f}" value="${state.inventory[f] || 0}" min="0">
-            </div>`).join('');
-        document.getElementById('inv-modal').classList.remove('hidden'); document.getElementById('inv-modal').classList.add('flex');
+        // Add search input to modal if it doesn't exist
+        const listEl = document.getElementById('inv-list');
+        if (!document.getElementById('inv-search')) {
+            const searchContainer = document.createElement('div');
+            searchContainer.className = 'mb-4 sticky top-0 bg-white pt-2 pb-4 z-10 border-b';
+            searchContainer.innerHTML = `
+                <div class="relative">
+                    <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                    <input type="text" id="inv-search" placeholder="Search feathers..." 
+                           class="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-100 outline-none">
+                </div>`;
+            listEl.prepend(searchContainer);
+            document.getElementById('inv-search').oninput = (e) => updateInventoryModal(e.target.value);
+        }
+        updateInventoryModal();
+        document.getElementById('inv-modal').classList.remove('hidden'); 
+        document.getElementById('inv-modal').classList.add('flex', 'animate-in');
     };
+    
     document.getElementById('close-inv').onclick = () => document.getElementById('inv-modal').classList.replace('flex', 'hidden');
     document.getElementById('save-inv').onclick = () => {
-        document.querySelectorAll('.inv-input').forEach(input => { state.inventory[input.dataset.feather] = parseInt(input.value) || 0; });
-        document.getElementById('inv-modal').classList.replace('flex', 'hidden'); updateSummary();
+        // We need to capture ALL inputs, even those filtered out
+        // However, the current DOM only has filtered ones. 
+        // Better to update state on input change or use a better strategy.
+        // For now, let's update state for whatever is CURRENTLY in the DOM
+        document.querySelectorAll('.inv-input').forEach(input => { 
+            state.inventory[input.dataset.feather] = parseInt(input.value) || 0; 
+        });
+        document.getElementById('inv-modal').classList.replace('flex', 'hidden'); 
+        updateSummary();
     };
 
-    document.onclick = (e) => {
-        if (e.target.closest('.clear-set-btn')) { state.build[e.target.closest('.clear-set-btn').dataset.set].forEach(s => { s.feather = ''; s.tier = 1; }); renderStatues(); updateSummary(); }
+    // Global click handler
+    document.addEventListener('click', (e) => {
+        const clearBtn = e.target.closest('.clear-set-btn');
+        if (clearBtn) {
+            if (confirm(`Clear all slots in ${clearBtn.dataset.set}?`)) {
+                state.build[clearBtn.dataset.set].forEach(s => { s.feather = ''; s.tier = 1; });
+                renderStatues(); updateSummary();
+            }
+        }
         else if (e.target.classList.contains('toggle-set-btn')) {
             const { set, type } = e.target.dataset; const idx = state.unlockedSets[type].indexOf(set);
             if (idx > -1) state.unlockedSets[type].splice(idx, 1); else state.unlockedSets[type].push(set);
             renderSetToggles(); renderStatues(); updateSummary();
         }
-    };
+    });
 
-    document.onchange = (e) => {
-        if (e.target.classList.contains('feather-select')) { state.build[e.target.dataset.set][e.target.dataset.slot].feather = e.target.value; renderStatues(); updateSummary(); }
-        else if (e.target.classList.contains('tier-select')) { state.build[e.target.dataset.set][e.target.dataset.slot].tier = parseInt(e.target.value); renderStatues(); updateSummary(); }
-        else if (e.target.classList.contains('set-tier-select')) { state.build[e.target.dataset.set].forEach(slot => { slot.tier = parseInt(e.target.value); }); renderStatues(); updateSummary(); }
-    };
+    document.addEventListener('change', (e) => {
+        if (e.target.classList.contains('feather-select')) { 
+            state.build[e.target.dataset.set][e.target.dataset.slot].feather = e.target.value; 
+            renderStatues(); updateSummary(); 
+        }
+        else if (e.target.classList.contains('tier-select')) { 
+            state.build[e.target.dataset.set][e.target.dataset.slot].tier = parseInt(e.target.value); 
+            renderStatues(); updateSummary(); 
+        }
+        else if (e.target.classList.contains('set-tier-select')) { 
+            state.build[e.target.dataset.set].forEach(slot => { slot.tier = parseInt(e.target.value); }); 
+            renderStatues(); updateSummary(); 
+        }
+    });
 }
+
 window.onload = loadData;

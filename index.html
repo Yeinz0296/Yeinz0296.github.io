@@ -8,233 +8,329 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap');
         
         :root {
-            --ro-blue: #3a5ba0;
-            --ro-blue-light: #4e7cc2;
-            --ro-bg: #f0f4f8;
-            --ro-window-bg: #ffffff;
-            --ro-border: #8fa6d0;
-            --ro-header: #e1e9f5;
-            --ro-accent: #ff9f43;
+            --ro-blue: #4299e1;
+            --ro-blue-light: #63b3ed;
+            --ro-blue-dark: #2b6cb0;
+            --ro-bg: #0f172a;
+            --ro-window-bg: #1e293b;
+            --ro-border: #334155;
+            --ro-header: #1e293b;
+            --ro-accent: #f6ad55;
+            --ro-gold: #f6e05e;
+            --ro-purple: #b794f4;
+            --ro-red: #fc8181;
+            --ro-green: #68d391;
+            --ro-text-main: #f1f5f9;
+            --ro-text-muted: #94a3b8;
         }
 
         body {
             background-color: var(--ro-bg);
-            background-image: radial-gradient(var(--ro-border) 0.5px, transparent 0.5px);
-            background-size: 20px 20px;
+            background-image: 
+                radial-gradient(var(--ro-border) 0.5px, transparent 0.5px),
+                linear-gradient(to bottom, #1e293b 0%, var(--ro-bg) 100%);
+            background-size: 20px 20px, 100% 100%;
+            background-attachment: fixed;
             font-family: 'Quicksand', sans-serif;
+            color: var(--ro-text-main);
         }
 
         .ro-window {
             background: var(--ro-window-bg);
-            border: 2px solid var(--ro-blue);
-            border-radius: 4px;
-            box-shadow: 4px 4px 0px rgba(58, 91, 160, 0.2);
+            border: 1px solid var(--ro-border);
+            border-radius: 12px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
+            transition: transform 0.2s, box-shadow 0.2s;
+            overflow: hidden;
+        }
+
+        .ro-window:hover {
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+            border-color: #475569;
         }
 
         .ro-header {
-            background: linear-gradient(to bottom, var(--ro-blue-light), var(--ro-blue));
+            background: #1e293b;
             color: white;
-            padding: 6px 12px;
-            font-weight: bold;
-            text-shadow: 1px 1px 1px rgba(0,0,0,0.3);
-            border-bottom: 2px solid var(--ro-blue);
+            padding: 12px 16px;
+            font-weight: 700;
+            letter-spacing: 0.025em;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--ro-border);
         }
 
         .ro-tab {
-            background: var(--ro-header);
-            border: 1px solid var(--ro-border);
-            border-bottom: none;
-            border-radius: 6px 6px 0 0;
-            margin-right: 4px;
-            transition: all 0.2s;
+            padding: 8px 20px;
+            font-weight: 600;
+            color: var(--ro-text-muted);
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .ro-tab:hover {
+            color: var(--ro-blue);
+            background: rgba(66, 153, 225, 0.1);
         }
 
         .ro-tab.active {
-            background: white;
-            border: 2px solid var(--ro-blue);
-            border-bottom: 2px solid white;
-            margin-bottom: -2px;
-            z-index: 10;
             color: var(--ro-blue);
-            font-weight: bold;
+            border-bottom: 2px solid var(--ro-blue);
+            background: rgba(66, 153, 225, 0.15);
         }
 
-        .ro-window-atk {
-            border-color: #c0392b;
-            box-shadow: 4px 4px 0px rgba(192, 57, 43, 0.2);
+        .ro-window-atk { border-left: 4px solid var(--ro-red); }
+        .ro-header-atk { background: linear-gradient(135deg, #742a2a, #9b2c2c); }
+
+        .ro-window-def { border-left: 4px solid var(--ro-blue); }
+        .ro-header-def { background: linear-gradient(135deg, #2c5282, #2b6cb0); }
+
+        .ro-slot {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 12px;
+            transition: all 0.2s;
         }
 
-        .ro-header-atk {
-            background: linear-gradient(to bottom, #e74c3c, #c0392b);
-        }
-
-        .ro-window-def {
-            border-color: #2980b9;
-            box-shadow: 4px 4px 0px rgba(41, 128, 185, 0.2);
-        }
-
-        .ro-header-def {
-            background: linear-gradient(to bottom, #3498db, #2980b9);
+        .ro-slot:focus-within {
+            border-color: var(--ro-blue);
+            background: #1e293b;
+            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.2);
         }
 
         .ro-slot-gold {
-            background-color: #fffbeb !important;
-            border: 1px solid #fde68a !important;
+            background: linear-gradient(to bottom right, #2d2613, #1e1b10);
+            border-color: #744210;
         }
 
         .ro-slot-purple {
-            background-color: #faf5ff !important;
-            border: 1px solid #e9d5ff !important;
+            background: linear-gradient(to bottom right, #21163e, #1a1429);
+            border-color: #44337a;
         }
 
         .ro-button {
-            background: linear-gradient(to bottom, #ffffff, #e1e9f5);
-            border: 1px solid var(--ro-blue);
-            border-radius: 4px;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-            transition: all 0.1s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+            cursor: pointer;
         }
 
-        .ro-button:active {
-            transform: translateY(1px);
-            box-shadow: none;
-            background: #e1e9f5;
+        .ro-button-outline {
+            border: 1px solid var(--ro-border);
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--ro-text-main);
+        }
+
+        .ro-button-outline:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: #475569;
         }
 
         .ro-button-primary {
-            background: linear-gradient(to bottom, var(--ro-blue-light), var(--ro-blue));
+            background: var(--ro-blue);
             color: white;
-            border: 1px solid #2a4175;
+            border: 1px solid var(--ro-blue-dark);
+        }
+
+        .ro-button-primary:hover {
+            background: var(--ro-blue-dark);
+            box-shadow: 0 4px 12px rgba(66, 153, 225, 0.3);
         }
 
         .ro-label {
-            color: var(--ro-blue);
-            font-weight: 600;
-            font-size: 0.75rem;
+            color: var(--ro-text-muted);
+            font-weight: 700;
+            font-size: 0.7rem;
             text-transform: uppercase;
             letter-spacing: 0.05em;
+            margin-bottom: 4px;
         }
 
-        .hidden { display: none !important; }
+        .stat-card {
+            background: #1e293b;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid var(--ro-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .stat-card.priority {
+            background: #2d2613;
+            border-color: #744210;
+        }
+
+        .info-pill {
+            background: #334155;
+            color: var(--ro-text-main);
+            padding: 2px 8px;
+            border-radius: 9999px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        /* Modern scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--ro-bg); }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+        select, input {
+            background-color: #0f172a;
+            color: var(--ro-text-main);
+            border-color: #334155;
+            transition: all 0.2s;
+        }
         
-        /* Pixel-style scrollbar */
-        ::-webkit-scrollbar { width: 10px; }
-        ::-webkit-scrollbar-track { background: var(--ro-header); }
-        ::-webkit-scrollbar-thumb { background: var(--ro-blue); border: 2px solid var(--ro-header); }
-
-        select {
-            appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%233a5ba0'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 0.5rem center;
-            background-size: 1em;
+        select option {
+            background-color: #1e293b;
+            color: var(--ro-text-main);
         }
+
+        .animate-in {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .rarity-dot {
+            height: 8px;
+            width: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 6px;
+        }
+        .dot-gold { background-color: var(--ro-gold); box-shadow: 0 0 8px rgba(246, 224, 94, 0.6); }
+        .dot-purple { background-color: var(--ro-purple); box-shadow: 0 0 8px rgba(183, 148, 244, 0.6); }
     </style>
 </head>
-<body class="text-slate-700 min-h-screen">
+<body class="min-h-screen">
     <!-- Navbar -->
-    <nav class="bg-white border-b-2 border-ro-blue mb-6 shadow-sm">
+    <nav class="bg-slate-900/80 backdrop-blur-md border-b border-slate-800 mb-8 sticky top-0 z-40">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-14">
+            <div class="flex justify-between h-16">
                 <div class="flex items-center">
-                    <div class="flex-shrink-0 flex items-center font-bold text-2xl text-ro-blue tracking-tight">
-                        <i class="fas fa-gem mr-2 text-ro-accent"></i>ROOC PLANNER
+                    <div class="flex-shrink-0 flex items-center font-bold text-xl text-ro-blue tracking-tighter">
+                        <div class="w-8 h-8 bg-ro-blue rounded-lg flex items-center justify-center mr-3 shadow-lg shadow-blue-500/20">
+                            <i class="fas fa-gem text-white text-xs"></i>
+                        </div>
+                        ROOC <span class="text-ro-accent ml-1">PLANNER</span>
                     </div>
                 </div>
-                <div class="flex items-end space-x-1">
-                    <a href="#" class="tab-btn active px-4 py-2 text-sm ro-tab" data-target="tab-feather">Feather</a>
-                    <a href="#" class="tab-btn px-4 py-2 text-sm ro-tab opacity-50 cursor-not-allowed" title="Coming soon">Stats</a>
-                    <a href="#" class="tab-btn px-4 py-2 text-sm ro-tab opacity-50 cursor-not-allowed" title="Coming soon">Skill</a>
-                    <a href="#" class="tab-btn px-4 py-2 text-sm ro-tab" data-target="tab-support">Support</a>
+                <div class="flex items-center space-x-1">
+                    <a href="#" class="tab-btn active ro-tab" data-target="tab-feather">Feathers</a>
+                    <a href="#" class="tab-btn ro-tab opacity-30 cursor-not-allowed" title="Coming soon">Equipment</a>
+                    <a href="#" class="tab-btn ro-tab" data-target="tab-support">Support</a>
                 </div>
             </div>
         </div>
     </nav>
 
     <!-- Main Content -->
-    <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
         <!-- Loading State -->
-        <div id="loading" class="flex justify-center items-center py-20">
-            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-            <span class="ml-3 text-lg text-gray-600">Loading Game Data...</span>
+        <div id="loading" class="flex flex-col justify-center items-center py-32">
+            <div class="relative">
+                <div class="w-16 h-16 border-4 border-slate-800 border-t-ro-blue rounded-full animate-spin"></div>
+                <i class="fas fa-gem absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-ro-blue opacity-40"></i>
+            </div>
+            <span class="mt-6 text-sm font-bold text-slate-500 uppercase tracking-widest">Initialising Database...</span>
         </div>
 
         <!-- Feather Tab -->
         <div id="tab-feather" class="tab-content hidden">
             <!-- Data Disclaimer Notice -->
-            <div class="ro-window mb-6 overflow-hidden border-ro-accent border-2">
-                <div class="ro-header bg-gradient-to-r from-orange-400 to-ro-accent flex items-center">
-                    <i class="fas fa-exclamation-circle mr-2"></i>
-                    <span class="text-sm font-bold tracking-wider uppercase text-white">Project Notice & Data Disclaimer</span>
-                </div>
-                <div class="p-4 bg-orange-50 text-sm text-slate-700 leading-relaxed">
-                    <p class="mb-2">
-                        <span class="font-bold text-ro-accent uppercase mr-1">Personal Research:</span> 
-                        This is a personal project. All data provided here is based on my own in-game research and testing. 
-                        Since the game is relatively new and resources are limited, some values (especially for higher tiers, set bonuses, and MIX feathers) 
-                        may be <strong>estimated or incorrect</strong>.
-                    </p>
-                    <p>
-                        <span class="font-bold text-ro-blue uppercase mr-1">Contribute:</span> 
-                        If you have more accurate data, find any errors, or have screenshots of higher tier stats, you are most welcome to 
-                        help improve this tool! Please share your findings with me via the contact info in the 
-                        <a href="#" class="text-ro-blue font-bold underline hover:text-ro-blue-light" onclick="document.querySelector('[data-target=\'tab-support\']').click()">Support</a> tab.
-                    </p>
+            <div class="ro-window mb-8 border-none bg-gradient-to-r from-orange-900/20 to-slate-800/50">
+                <div class="flex flex-col sm:flex-row">
+                    <div class="bg-orange-500/20 p-4 flex items-center justify-center sm:w-16">
+                        <i class="fas fa-flask text-ro-accent text-xl"></i>
+                    </div>
+                    <div class="p-5 flex-1">
+                        <h4 class="text-ro-accent font-black text-xs uppercase tracking-widest mb-2">Researcher's Note</h4>
+                        <div class="text-sm text-slate-300 leading-relaxed">
+                            <p>
+                                This tool is based on <span class="font-bold text-white">personal in-game research</span>. 
+                                Some values for high-tier feathers and set bonuses are estimated. 
+                                If you have more accurate data, please reach out via the 
+                                <a href="#" class="text-ro-blue font-bold hover:underline" onclick="document.querySelector('[data-target=\'tab-support\']').click()">Support</a> tab.
+                            </p>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
                 
                 <!-- Left Sidebar: Controls & Summary -->
-                <div class="lg:col-span-1 space-y-6">
+                <div class="lg:col-span-1 space-y-8">
                     <!-- Class & Mode Selection -->
-                    <div class="bg-white shadow rounded-lg p-5">
-                        <div class="flex justify-between items-center mb-4 border-b pb-2">
-                            <h3 class="text-lg font-medium text-gray-900">Build Settings</h3>
-                            <div class="flex space-x-2">
-                                <button id="optimize-btn" class="text-[10px] text-ro-accent hover:text-orange-600 font-bold uppercase" title="Auto-allocate from inventory"><i class="fas fa-magic mr-1"></i>Optimize</button>
-                                <button id="inv-btn" class="text-[10px] text-green-600 hover:text-green-800 font-bold uppercase" title="Manage owned feathers"><i class="fas fa-box mr-1"></i>Inv</button>
-                                <button id="share-btn" class="text-[10px] text-ro-blue hover:text-ro-blue-light font-bold uppercase" title="Copy shareable link"><i class="fas fa-share-alt"></i></button>
-                                <button id="clear-all-btn" class="text-[10px] text-red-600 hover:text-red-800 font-bold uppercase" title="Clear all"><i class="fas fa-trash-alt"></i></button>
+                    <div class="bg-slate-800/50 border border-slate-700 rounded-xl p-6 shadow-xl">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="font-black text-xs uppercase tracking-widest text-slate-500">Configuration</h3>
+                            <div class="flex space-x-1">
+                                <button id="inv-btn" class="w-8 h-8 flex items-center justify-center rounded-lg bg-green-500/10 text-green-400 hover:bg-green-500/20 transition-colors" title="Inventory"><i class="fas fa-box text-xs"></i></button>
+                                <button id="share-btn" class="w-8 h-8 flex items-center justify-center rounded-lg bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 transition-colors" title="Share"><i class="fas fa-share-alt text-xs"></i></button>
+                                <button id="clear-all-btn" class="w-8 h-8 flex items-center justify-center rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors" title="Reset All"><i class="fas fa-trash-alt text-xs"></i></button>
                             </div>
                         </div>
                         
-                        <div class="space-y-3">
+                        <div class="space-y-4">
                             <div>
-                                <label class="ro-label block mb-1">Game Mode</label>
-                                <select id="class-mode" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-50 py-2 px-3 text-sm">
-                                    <option value="pve">PvE Focus</option>
-                                    <option value="pvp">PvP Focus</option>
-                                    <option value="both">Hybrid (PvE & PvP)</option>
+                                <label class="ro-label">Focus Mode</label>
+                                <select id="class-mode" class="w-full border-slate-700 rounded-lg shadow-inner bg-slate-900 py-2.5 px-3 text-sm font-semibold outline-none transition-all focus:border-ro-blue">
+                                    <option value="pve">PvE (Monster/Boss)</option>
+                                    <option value="pvp">PvP (Arena/Guild)</option>
+                                    <option value="both">Hybrid Focus</option>
                                 </select>
                             </div>
                             <div>
-                                <label class="ro-label block mb-1">Class Build</label>
-                                <select id="class-preset" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-50 py-2 px-3 text-sm">
+                                <label class="ro-label">Recommended Build</label>
+                                <select id="class-preset" class="w-full border-slate-700 rounded-lg shadow-inner bg-slate-900 py-2.5 px-3 text-sm font-semibold outline-none transition-all focus:border-ro-blue">
                                     <!-- Populated via JS -->
                                 </select>
                             </div>
-                            <button id="print-btn" class="w-full ro-button py-2 text-xs font-bold uppercase text-slate-600 mt-2">
-                                <i class="fas fa-camera mr-2"></i>Save as Image / Print
-                            </button>
+                            <div class="pt-2 grid grid-cols-2 gap-2">
+                                <button id="optimize-btn" class="ro-button ro-button-primary w-full py-2.5 shadow-lg shadow-blue-500/20">
+                                    <i class="fas fa-magic mr-2"></i>Apply
+                                </button>
+                                <button id="print-btn" class="ro-button ro-button-outline w-full py-2.5">
+                                    <i class="fas fa-camera mr-2"></i>Print
+                                </button>
+                            </div>
                         </div>
                     </div>
 
                     <!-- Set Unlocks -->
-                    <div class="bg-white shadow rounded-lg p-5">
-                        <h3 class="text-lg font-medium text-gray-900 mb-4 border-b pb-2">Unlocked Sets</h3>
-                        <div class="space-y-4">
+                    <div class="bg-slate-800/50 border border-slate-700 rounded-xl p-6 shadow-xl">
+                        <h3 class="font-black text-xs uppercase tracking-widest text-slate-500 mb-6">Statue Management</h3>
+                        <div class="space-y-6">
                             <div>
-                                <h4 class="text-sm font-semibold text-red-600 mb-2">Attack Sets</h4>
+                                <h4 class="text-[10px] font-black text-red-400 mb-3 uppercase tracking-tighter flex items-center">
+                                    <span class="w-1 h-3 bg-red-400 rounded-full mr-2"></span> Offensive Statues
+                                </h4>
                                 <div class="flex flex-wrap gap-2" id="atk-set-toggles">
                                     <!-- Rendered via JS -->
                                 </div>
                             </div>
                             <div>
-                                <h4 class="text-sm font-semibold text-blue-600 mb-2">Defense Sets</h4>
+                                <h4 class="text-[10px] font-black text-blue-400 mb-3 uppercase tracking-tighter flex items-center">
+                                    <span class="w-1 h-3 bg-blue-400 rounded-full mr-2"></span> Defensive Statues
+                                </h4>
                                 <div class="flex flex-wrap gap-2" id="def-set-toggles">
                                     <!-- Rendered via JS -->
                                 </div>
@@ -243,21 +339,21 @@
                     </div>
 
                     <!-- Stats Summary -->
-                    <div class="bg-white shadow rounded-lg p-5 sticky top-6">
-                        <h3 class="text-lg font-medium text-gray-900 mb-4 border-b pb-2">Total Stats Summary</h3>
-                        <div id="stats-summary" class="space-y-2 text-sm">
+                    <div class="bg-slate-800/50 border border-slate-700 rounded-xl p-6 shadow-xl sticky top-24">
+                        <h3 class="font-black text-xs uppercase tracking-widest text-slate-500 mb-6">Final Attributes</h3>
+                        <div id="stats-summary" class="space-y-1 mb-8">
                             <!-- Rendered via JS -->
                         </div>
                         
-                        <h3 class="text-lg font-medium text-gray-900 mt-6 mb-4 border-b pb-2">Resource Cost</h3>
-                        <div class="space-y-4 text-sm">
-                            <div id="cost-breakdown">
+                        <div class="pt-6 border-t border-slate-700">
+                            <div id="cost-breakdown" class="space-y-1">
                                 <!-- Feather counts rendered via JS -->
                             </div>
-                            <div class="pt-2 border-t">
-                                <div class="flex justify-between items-center">
-                                    <span class="text-gray-600 font-bold uppercase text-xs">Total Eden Coins:</span>
-                                    <span id="total-eden" class="font-bold text-yellow-600">0</span>
+                            <div class="mt-6 bg-slate-900 rounded-xl p-4 border border-slate-700 shadow-inner">
+                                <div class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Eden Coins Required</div>
+                                <div class="flex items-baseline">
+                                    <span id="total-eden" class="text-xl font-black text-yellow-400">0</span>
+                                    <span class="ml-2 text-[10px] text-slate-500 font-bold uppercase">Coins</span>
                                 </div>
                             </div>
                         </div>
@@ -265,7 +361,7 @@
                 </div>
 
                 <!-- Right Area: Statues Config -->
-                <div class="lg:col-span-3 space-y-8">
+                <div class="lg:col-span-3">
                     <div id="statues-container">
                         <!-- Rendered via JS -->
                     </div>
@@ -274,32 +370,70 @@
         </div>
 
         <!-- Support Me Tab -->
-        <div id="tab-support" class="tab-content hidden">
-            <div class="bg-white shadow rounded-lg p-8 max-w-2xl mx-auto text-center">
-                <h2 class="text-2xl font-bold text-gray-900 mb-4">Support the Development!</h2>
-                <p class="text-gray-600 mb-8">If you find this tool helpful, consider buying me a coffee! Your support helps keep this tool updated with the latest game data.</p>
-                <div class="flex justify-center">
-                    <img src="data/support me/Touch n Go QR.png" alt="Touch n Go QR Code" class="max-w-md w-full shadow-lg rounded-lg border">
+        <div id="tab-support" class="tab-content hidden animate-in">
+            <div class="max-w-4xl mx-auto">
+                <div class="bg-slate-800/50 border border-slate-700 rounded-3xl overflow-hidden shadow-2xl">
+                    <div class="md:flex">
+                        <div class="md:w-1/2 p-12 flex flex-col justify-center bg-slate-900/30">
+                            <div class="w-16 h-16 bg-ro-accent rounded-2xl flex items-center justify-center mb-8 shadow-lg shadow-orange-500/20">
+                                <i class="fas fa-heart text-white text-2xl"></i>
+                            </div>
+                            <h2 class="text-3xl font-black text-white mb-6">Support the Development</h2>
+                            <p class="text-slate-400 leading-relaxed mb-8">
+                                If you find this tool helpful for your journey in Ragnarok Origin, consider buying me a coffee! 
+                                Your support helps me keep the database updated and improve the planner with new features.
+                            </p>
+                            <div class="space-y-4">
+                                <div class="flex items-center text-sm font-bold text-slate-300">
+                                    <div class="w-6 h-6 rounded-full bg-green-500/10 text-green-400 flex items-center justify-center mr-3 text-[10px]"><i class="fas fa-check"></i></div>
+                                    Regular data updates
+                                </div>
+                                <div class="flex items-center text-sm font-bold text-slate-300">
+                                    <div class="w-6 h-6 rounded-full bg-blue-500/10 text-blue-400 flex items-center justify-center mr-3 text-[10px]"><i class="fas fa-check"></i></div>
+                                    Mobile-friendly interface
+                                </div>
+                            </div>
+                        </div>
+                        <div class="md:w-1/2 p-12 bg-white flex flex-col items-center justify-center">
+                            <div class="relative group">
+                                <div class="absolute -inset-4 bg-gradient-to-tr from-ro-blue to-ro-accent rounded-[2rem] opacity-20 group-hover:opacity-40 transition-opacity blur-2xl"></div>
+                                <img src="data/support me/Touch n Go QR.png" alt="Touch n Go QR Code" class="relative max-w-xs w-full shadow-2xl rounded-2xl border-4 border-slate-200 rotate-1 group-hover:rotate-0 transition-transform duration-500">
+                            </div>
+                            <p class="mt-10 text-[10px] font-black uppercase tracking-widest text-slate-500">Scan to Support</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </main>
 
     <!-- Inventory Modal -->
-    <div id="inv-modal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
-        <div class="ro-window w-full max-w-2xl max-h-[80vh] flex flex-col">
-            <div class="ro-header flex justify-between items-center">
-                <span><i class="fas fa-box mr-2"></i>FEATHER INVENTORY</span>
-                <button id="close-inv" class="text-white hover:text-ro-accent"><i class="fas fa-times"></i></button>
+    <div id="inv-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+        <div class="bg-slate-800 border border-slate-700 rounded-3xl w-full max-w-2xl max-h-[85vh] flex flex-col shadow-2xl overflow-hidden animate-in">
+            <div class="bg-slate-900 px-8 py-6 flex justify-between items-center border-b border-slate-700">
+                <div class="flex items-center">
+                    <div class="w-10 h-10 bg-green-500 rounded-xl flex items-center justify-center mr-4 shadow-lg shadow-green-500/20">
+                        <i class="fas fa-box text-white text-sm"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-white font-black text-sm uppercase tracking-widest">Feather Inventory</h3>
+                        <p class="text-slate-500 text-[10px] font-bold uppercase tracking-tighter">Manage your owned resources</p>
+                    </div>
+                </div>
+                <button id="close-inv" class="w-8 h-8 flex items-center justify-center rounded-full bg-white/5 text-white hover:bg-white/10 transition-colors">
+                    <i class="fas fa-times text-xs"></i>
+                </button>
             </div>
-            <div class="p-4 overflow-y-auto bg-white" id="inv-list">
-                <p class="text-sm text-gray-500 mb-4 italic">Enter the number of feathers you already own. These will be subtracted from the "Required" list in the sidebar.</p>
+            <div class="p-8 overflow-y-auto bg-slate-800/50" id="inv-list">
                 <div class="grid grid-cols-2 sm:grid-cols-3 gap-4" id="inv-inputs">
                     <!-- Rendered via JS -->
                 </div>
             </div>
-            <div class="p-4 bg-slate-50 border-t flex justify-end">
-                <button id="save-inv" class="ro-button ro-button-primary px-6 py-2 text-sm font-bold uppercase">Done</button>
+            <div class="px-8 py-6 bg-slate-900 border-t border-slate-700 flex justify-end items-center">
+                <span class="mr-auto text-[10px] font-bold text-slate-500 uppercase italic">Changes are saved automatically</span>
+                <button id="save-inv" class="ro-button ro-button-primary px-8 py-3">
+                    Confirm & Save
+                </button>
             </div>
         </div>
     </div>
