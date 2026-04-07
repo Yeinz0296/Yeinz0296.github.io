@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ROOC Planner - Valkyrie Feather</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .hidden { display: none !important; }
+        .tab-btn.active { border-bottom: 2px solid #3b82f6; color: #3b82f6; }
+        .slot-card { transition: all 0.2s; }
+        .slot-card:hover { transform: translateY(-2px); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen">
+    <!-- Navbar -->
+    <nav class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex">
+                    <div class="flex-shrink-0 flex items-center font-bold text-xl text-blue-600">
+                        ROOC Planner
+                    </div>
+                    <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
+                        <a href="#" class="tab-btn active inline-flex items-center px-1 pt-1 text-sm font-medium" data-target="tab-feather">Feather</a>
+                        <a href="#" class="tab-btn inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-500 hover:text-gray-700 opacity-50 cursor-not-allowed" title="Coming soon">Stats</a>
+                        <a href="#" class="tab-btn inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-500 hover:text-gray-700 opacity-50 cursor-not-allowed" title="Coming soon">Skill</a>
+                        <a href="#" class="tab-btn inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-500 hover:text-gray-700 opacity-50 cursor-not-allowed" title="Coming soon">Equipment</a>
+                        <a href="#" class="tab-btn inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-500 hover:text-gray-700" data-target="tab-support">Support Me</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <!-- Loading State -->
+        <div id="loading" class="flex justify-center items-center py-20">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            <span class="ml-3 text-lg text-gray-600">Loading Game Data...</span>
+        </div>
+
+        <!-- Feather Tab -->
+        <div id="tab-feather" class="tab-content hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                
+                <!-- Left Sidebar: Controls & Summary -->
+                <div class="lg:col-span-1 space-y-6">
+                    <!-- Class Preset -->
+                    <div class="bg-white shadow rounded-lg p-5">
+                        <h3 class="text-lg font-medium text-gray-900 mb-4 border-b pb-2">Class Preset</h3>
+                        <select id="class-preset" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-50 py-2 px-3">
+                            <option value="none">Custom / None</option>
+                            <option value="paladin">Paladin (Sacrifice Tank)</option>
+                            <option value="bard">Bard/Minstrel (Support)</option>
+                        </select>
+                    </div>
+
+                    <!-- Set Unlocks -->
+                    <div class="bg-white shadow rounded-lg p-5">
+                        <h3 class="text-lg font-medium text-gray-900 mb-4 border-b pb-2">Unlocked Sets</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <h4 class="text-sm font-semibold text-red-600 mb-2">Attack Sets</h4>
+                                <div class="flex flex-wrap gap-2" id="atk-set-toggles">
+                                    <!-- Rendered via JS -->
+                                </div>
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-semibold text-blue-600 mb-2">Defense Sets</h4>
+                                <div class="flex flex-wrap gap-2" id="def-set-toggles">
+                                    <!-- Rendered via JS -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Stats Summary -->
+                    <div class="bg-white shadow rounded-lg p-5 sticky top-6">
+                        <h3 class="text-lg font-medium text-gray-900 mb-4 border-b pb-2">Total Stats Summary</h3>
+                        <div id="stats-summary" class="space-y-2 text-sm">
+                            <!-- Rendered via JS -->
+                        </div>
+                        
+                        <h3 class="text-lg font-medium text-gray-900 mt-6 mb-4 border-b pb-2">Resource Cost</h3>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Total Eden Coins:</span>
+                                <span id="total-eden" class="font-medium text-yellow-600">0</span>
+                            </div>
+                            <div id="cost-breakdown" class="mt-2 text-xs text-gray-500">
+                                <!-- Rendered via JS -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Area: Statues Config -->
+                <div class="lg:col-span-3 space-y-8">
+                    <div id="statues-container">
+                        <!-- Rendered via JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Support Me Tab -->
+        <div id="tab-support" class="tab-content hidden">
+            <div class="bg-white shadow rounded-lg p-8 max-w-2xl mx-auto text-center">
+                <h2 class="text-2xl font-bold text-gray-900 mb-4">Support the Development!</h2>
+                <p class="text-gray-600 mb-8">If you find this tool helpful, consider buying me a coffee! Your support helps keep this tool updated with the latest game data.</p>
+                <div class="flex justify-center">
+                    <img src="data/support me/Touch n Go QR.png" alt="Touch n Go QR Code" class="max-w-md w-full shadow-lg rounded-lg border">
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
