@@ -80,10 +80,14 @@
             background: linear-gradient(to bottom, #3498db, #2980b9);
         }
 
-        .ro-slot {
-            background: #f8fafc;
-            border: 1px dashed var(--ro-border);
-            border-radius: 4px;
+        .ro-slot-gold {
+            background-color: #fffbeb !important;
+            border: 1px solid #fde68a !important;
+        }
+
+        .ro-slot-purple {
+            background-color: #faf5ff !important;
+            border: 1px solid #e9d5ff !important;
         }
 
         .ro-button {
@@ -226,13 +230,15 @@
                         </div>
                         
                         <h3 class="text-lg font-medium text-gray-900 mt-6 mb-4 border-b pb-2">Resource Cost</h3>
-                        <div class="space-y-2 text-sm">
-                            <div class="flex justify-between">
-                                <span class="text-gray-600">Total Eden Coins:</span>
-                                <span id="total-eden" class="font-medium text-yellow-600">0</span>
+                        <div class="space-y-4 text-sm">
+                            <div id="cost-breakdown">
+                                <!-- Feather counts rendered via JS -->
                             </div>
-                            <div id="cost-breakdown" class="mt-2 text-xs text-gray-500">
-                                <!-- Rendered via JS -->
+                            <div class="pt-2 border-t">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-gray-600 font-bold uppercase text-xs">Total Eden Coins:</span>
+                                    <span id="total-eden" class="font-bold text-yellow-600">0</span>
+                                </div>
                             </div>
                         </div>
                     </div>
