@@ -21,7 +21,7 @@ const state = {
     presets: {
         paladin: {
             priorityStats: ['vit', 'ignore_pdef', 'pve_dmg_bonus', 'pve_dmg_reduction', 'max_hp', 'pdef', 'mdef'],
-            hiddenStats: ['str', 'patk', 'patk_matk', 'int', 'dex'], // Hiding PATK/MATK too since it's sacrifice
+            hiddenStats: ['str', 'patk', 'patk_matk', 'int', 'dex'],
             optimal: {
                 atk: ['Time', 'Day', 'Sky', 'Grace', 'Justice'],
                 def: ['Nature', 'Night', 'Terra', 'Virtue', 'Soul']
@@ -31,8 +31,8 @@ const state = {
             priorityStats: ['vit', 'max_hp', 'pve_dmg_reduction', 'pdef', 'mdef', 'dex', 'int'],
             hiddenStats: ['str', 'patk', 'ignore_pdef', 'pve_dmg_bonus'],
             optimal: {
-                atk: ['Time', 'Space', 'Sky', 'Justice', 'Truth'], // Example
-                def: ['Divine', 'Nature', 'Night', 'Mercy', 'Virtue'] // Example
+                atk: ['Time', 'Space', 'Sky', 'Justice', 'Truth'],
+                def: ['Divine', 'Nature', 'Night', 'Mercy', 'Virtue']
             }
         }
     }
@@ -52,18 +52,27 @@ const STAT_NAMES = {
     'vit': 'VIT',
     'str': 'STR',
     'int': 'INT',
-    'dex': 'DEX'
+    'dex': 'DEX',
+    'atk_stat_percent': 'ATK Stat %',
+    'def_stat_percent': 'DEF Stat %',
+    'pve_stat_percent': 'PvE Stat %',
+    'pvp_stat_percent': 'PvP Stat %'
 };
+
+function parseNumber(str) {
+    if (!str || str === '') return 0;
+    return parseFloat(str.toString().replace(/,/g, '')) || 0;
+}
 
 // Initialize empty build state
 function initBuildState() {
     [...state.sets.atk, ...state.sets.def].forEach(setName => {
         state.build[setName] = [
-            { feather: '', tier: 7 },
-            { feather: '', tier: 7 },
-            { feather: '', tier: 7 },
-            { feather: '', tier: 7 },
-            { feather: '', tier: 7 }
+            { feather: '', tier: 1 },
+            { feather: '', tier: 1 },
+            { feather: '', tier: 1 },
+            { feather: '', tier: 1 },
+            { feather: '', tier: 1 }
         ];
     });
 }
@@ -79,7 +88,18 @@ async function loadData() {
                 Papa.parse(text, {
                     header: true,
                     skipEmptyLines: true,
-                    complete: (results) => resolve(results.data)
+                    transformHeader: (header) => header.trim().replace(/,$/, '').trim(),
+                    complete: (results) => {
+                        const cleanedData = results.data.map(row => {
+                            const newRow = {};
+                            for (let key in row) {
+                                const cleanKey = key.trim().replace(/,$/, '').trim();
+                                newRow[cleanKey] = typeof row[key] === 'string' ? row[key].trim() : row[key];
+                            }
+                            return newRow;
+                        });
+                        resolve(cleanedData);
+                    }
                 });
             });
         };
@@ -96,14 +116,12 @@ async function loadData() {
         state.data.feathers.mix = mixData;
         state.data.setBonuses = setBonusData;
 
-        // Group feathers by unique name for easy dropdown population
         state.uniqueFeathers = {
             atk: [...new Set(atkData.map(f => f.feather))],
             def: [...new Set(defData.map(f => f.feather))],
             mix: [...new Set(mixData.map(f => f.feather))]
         };
         
-        // Cache feather rarities
         state.featherRarities = {};
         [...atkData, ...defData, ...mixData].forEach(f => {
             if (f.feather && f.rarity) state.featherRarities[f.feather] = f.rarity.toLowerCase();
@@ -117,7 +135,7 @@ async function loadData() {
 
     } catch (error) {
         console.error("Failed to load data:", error);
-        document.getElementById('loading').innerHTML = `<span class="text-red-500">Error loading data. Make sure you are running via a web server.</span>`;
+        document.getElementById('loading').innerHTML = `<span class="text-red-500">Error loading data. ${error.message}</span>`;
     }
 }
 
@@ -152,10 +170,20 @@ function renderStatues() {
         const headerColor = type === 'atk' ? 'bg-red-50 text-red-800' : 'bg-blue-50 text-blue-800';
 
         let html = `
-        <div class="bg-white shadow rounded-lg border ${borderColor} overflow-hidden mb-6">
-            <div class="px-4 py-3 ${headerColor} border-b flex justify-between items-center">
-                <h3 class="text-lg font-bold">${setName} Statue</h3>
-                <span class="text-xs font-semibold px-2 py-1 bg-white rounded-full shadow-sm" id="set-bonus-${setName}">No Bonus</span>
+        <div class="ro-window overflow-hidden mb-6">
+            <div class="ro-header flex justify-between items-center">
+                <div class="flex items-center space-x-3">
+                    <span class="text-sm font-bold tracking-wide tracking-wider uppercase">${setName} Statue</span>
+                    <span class="text-[10px] font-bold px-2 py-0.5 bg-white text-ro-blue rounded-sm shadow-sm" id="set-bonus-${setName}">NO BONUS</span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="text-right">
+                        <span id="set-eden-${setName}" class="text-[10px] font-bold text-white opacity-90">0 EDEN</span>
+                    </div>
+                    <button class="clear-set-btn text-white hover:text-ro-accent transition-colors" data-set="${setName}" title="Clear Set">
+                        <i class="fas fa-undo-alt text-xs"></i>
+                    </button>
+                </div>
             </div>
             <div class="p-4 grid grid-cols-1 sm:grid-cols-5 gap-4">`;
 
@@ -165,10 +193,10 @@ function renderStatues() {
             const isWarnMix = (slot.feather === 'Order' || slot.feather === 'Truth') && slot.tier > 2;
             
             html += `
-                <div class="slot-card bg-gray-50 p-3 rounded border">
-                    <label class="block text-xs font-medium text-gray-700 mb-1">Slot ${i + 1}</label>
-                    <select class="w-full text-sm border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500 mb-2 feather-select" data-set="${setName}" data-slot="${i}">
-                        <option value="">-- Select --</option>
+                <div class="ro-slot p-3">
+                    <label class="ro-label block mb-1">Slot ${i + 1}</label>
+                    <select class="w-full text-xs border-ro-border rounded bg-white py-1 px-1 mb-2 feather-select" data-set="${setName}" data-slot="${i}">
+                        <option value="">-- Empty --</option>
                         ${availableFeathers.map(f => {
                             const isMix = state.uniqueFeathers.mix.includes(f);
                             const mixTag = isMix ? ' (Mix)' : '';
@@ -178,21 +206,26 @@ function renderStatues() {
                         }).join('')}
                     </select>
                     
-                    <label class="block text-xs font-medium text-gray-700 mb-1">Tier</label>
-                    <div class="flex items-center">
-                        <select class="w-full text-sm border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500 tier-select ${isWarnTier || isWarnMix ? 'border-red-400 bg-red-50' : ''}" data-set="${setName}" data-slot="${i}">
-                            ${[...Array(20).keys()].map(t => {
-                                const tNum = t + 1;
-                                return `<option value="${tNum}" ${slot.tier == tNum ? 'selected' : ''}>T${tNum}</option>`;
-                            }).join('')}
-                        </select>
-                    </div>
-                    ${isWarnTier ? '<p class="text-[10px] text-red-500 mt-1"><i class="fas fa-exclamation-triangle"></i> Expensive</p>' : ''}
-                    ${isWarnMix ? '<p class="text-[10px] text-red-500 mt-1"><i class="fas fa-exclamation-triangle"></i> Unconfirmed > T2</p>' : ''}
+                    <label class="ro-label block mb-1">Tier</label>
+                    <select class="w-full text-xs border-ro-border rounded bg-white py-1 px-1 tier-select ${isWarnTier || isWarnMix ? 'border-red-400 bg-red-50' : ''}" data-set="${setName}" data-slot="${i}">
+                        ${[...Array(20).keys()].map(t => {
+                            const tNum = t + 1;
+                            return `<option value="${tNum}" ${slot.tier == tNum ? 'selected' : ''}>T${tNum}</option>`;
+                        }).join('')}
+                    </select>
+                    ${isWarnTier ? '<p class="text-[9px] text-red-500 mt-1 font-bold">COST SPIKE</p>' : ''}
+                    ${isWarnMix ? '<p class="text-[9px] text-red-500 mt-1 font-bold">UNCONFIRMED</p>' : ''}
                 </div>`;
         }
         
-        html += `</div></div>`;
+        html += `
+            </div>
+            <div class="px-4 py-3 bg-slate-50 border-t">
+                <div class="flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-600" id="set-stats-${setName}">
+                    <!-- Set specific stats -->
+                </div>
+            </div>
+        </div>`;
         return html;
     };
 
@@ -206,111 +239,129 @@ function updateSummary() {
     let totalStats = {};
     let totalEden = 0;
     
-    const parseNumber = (str) => {
-        if (!str) return 0;
-        return parseFloat(str.toString().replace(/,/g, ''));
-    };
-
-    const addStats = (featherName, tier, type) => {
-        if (!featherName) return;
+    const getFeatherStats = (featherName, tier, type) => {
+        if (!featherName) return { stats: {}, eden: 0 };
         const dataArr = state.data.feathers[type];
         const row = dataArr.find(f => f.feather === featherName && parseInt(f.tier) === parseInt(tier));
         
+        let stats = {};
+        let eden = 0;
+
         if (row) {
             Object.keys(STAT_NAMES).forEach(statKey => {
                 if (row[statKey]) {
-                    totalStats[statKey] = (totalStats[statKey] || 0) + parseNumber(row[statKey]);
+                    stats[statKey] = parseNumber(row[statKey]);
                 }
             });
             
-            // Calculate Eden cost (sum from T1 to current tier)
             for(let t = 1; t < tier; t++) {
                 const costRow = dataArr.find(f => f.feather === featherName && parseInt(f.tier) === t);
                 if (costRow && costRow.eden_to_next) {
-                    totalEden += parseNumber(costRow.eden_to_next);
+                    eden += parseNumber(costRow.eden_to_next);
                 }
             }
         }
+        return { stats, eden };
     };
 
-    // Calculate active set bonuses
-    const activeSetBonuses = [];
-
     [...state.sets.atk, ...state.sets.def].forEach(setName => {
-        if (!state.unlockedSets.atk.includes(setName) && !state.unlockedSets.def.includes(setName)) return;
+        const isAtk = state.sets.atk.includes(setName);
+        const typeCat = isAtk ? 'atk' : 'def';
+        if (!state.unlockedSets[isAtk ? 'atk' : 'def'].includes(setName)) return;
+
+        let setStats = {};
+        let setEden = 0;
 
         const slots = state.build[setName];
         const activeFeathers = slots.filter(s => s.feather !== '');
         
-        const isAtk = state.sets.atk.includes(setName);
-        const typeCat = isAtk ? 'atk' : 'def';
-
-        // Add individual feather stats
         activeFeathers.forEach(s => {
             let cat = typeCat;
             if (state.uniqueFeathers.mix.includes(s.feather)) cat = 'mix';
-            addStats(s.feather, s.tier, cat);
+            const fResult = getFeatherStats(s.feather, s.tier, cat);
+            
+            setEden += fResult.eden;
+            Object.entries(fResult.stats).forEach(([k, v]) => {
+                setStats[k] = (setStats[k] || 0) + v;
+                totalStats[k] = (totalStats[k] || 0) + v;
+            });
         });
 
-        // Determine set bonus
+        const statusEl = document.getElementById(`set-bonus-${setName}`);
+        const statsEl = document.getElementById(`set-stats-${setName}`);
+        const edenEl = document.getElementById(`set-eden-${setName}`);
+        
+        if (!statusEl || !statsEl || !edenEl) return;
+
         if (activeFeathers.length === 5) {
-            // Check uniqueness
             const uniqueNames = new Set(activeFeathers.map(f => f.feather));
             if (uniqueNames.size === 5) {
                 const goldCount = activeFeathers.filter(f => state.featherRarities[f.feather] === 'gold').length;
                 const purpleCount = activeFeathers.filter(f => state.featherRarities[f.feather] === 'purple').length;
                 const minTier = Math.min(...activeFeathers.map(f => parseInt(f.tier)));
 
-                // Find matching set bonus rule
-                const bonusRules = state.data.setBonuses.filter(b => b.statue_type === typeCat);
-                let bestRule = null;
-                
-                // Sort by gold required desc, then purple desc
-                bonusRules.sort((a, b) => {
-                    const diffGold = parseNumber(b.req_gold) - parseNumber(a.req_gold);
-                    if (diffGold !== 0) return diffGold;
+                const bonusRules = state.data.setBonuses.filter(b => (b.statue_type || b['statue_type,']) === typeCat);
+                const possibleRules = bonusRules.filter(rule => {
+                    return goldCount >= parseNumber(rule.req_gold) && purpleCount >= parseNumber(rule.req_purple);
+                });
+
+                possibleRules.sort((a, b) => {
+                    const diffG = parseNumber(b.req_gold) - parseNumber(a.req_gold);
+                    if (diffG !== 0) return diffG;
                     return parseNumber(b.req_purple) - parseNumber(a.req_purple);
                 });
 
-                for (const rule of bonusRules) {
-                    if (goldCount >= parseNumber(rule.req_gold) && purpleCount >= parseNumber(rule.req_purple)) {
-                        bestRule = rule;
-                        break;
-                    }
-                }
-
-                if (bestRule) {
+                if (possibleRules.length > 0) {
+                    let bestRule = possibleRules[0];
                     const bNameDisp = bestRule.set_name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-                    document.getElementById(`set-bonus-${setName}`).innerText = `${bNameDisp} (T${minTier})`;
-                    document.getElementById(`set-bonus-${setName}`).className = "text-xs font-semibold px-2 py-1 rounded-full shadow-sm bg-purple-100 text-purple-800";
                     
-                    // The set_bonus.csv has a specific row for raven_prestige tiers, others only have T20
-                    let activeBonusRow = state.data.setBonuses.find(b => b.set_name === bestRule.set_name && parseInt(b.tier) === minTier);
-                    
-                    // If no specific tier row exists, fallback to interpolation or just use T20 if nothing else (MVP behavior)
-                    // In a full app, we would interpolate. Here we use exact match if available (Raven Prestige)
-                    if (activeBonusRow) {
+                    let bonusStatsRow = state.data.setBonuses.find(b => b.set_name === bestRule.set_name && parseInt(b.tier) === minTier && (b.statue_type || b['statue_type,']) === typeCat);
+                    let estimated = false;
+                    if (!bonusStatsRow) {
+                        bonusStatsRow = state.data.setBonuses.find(b => b.set_name === bestRule.set_name && parseInt(b.tier) === 20 && (b.statue_type || b['statue_type,']) === typeCat);
+                        estimated = (minTier < 20);
+                    }
+
+                    statusEl.innerText = `${bNameDisp} (T${minTier})${estimated ? '*' : ''}`;
+                    statusEl.className = "text-xs font-semibold px-2 py-1 rounded-full shadow-sm bg-purple-100 text-purple-800";
+
+                    if (bonusStatsRow) {
                         Object.keys(STAT_NAMES).forEach(statKey => {
-                            if (activeBonusRow[statKey]) {
-                                totalStats[statKey] = (totalStats[statKey] || 0) + parseNumber(activeBonusRow[statKey]);
+                            if (bonusStatsRow[statKey]) {
+                                let val = parseNumber(bonusStatsRow[statKey]);
+                                if (estimated) val = (val * minTier) / 20;
+                                setStats[statKey] = (setStats[statKey] || 0) + val;
+                                totalStats[statKey] = (totalStats[statKey] || 0) + val;
                             }
                         });
                     }
+                } else {
+                    statusEl.innerText = "No Matching Bonus";
+                    statusEl.className = "text-xs font-semibold px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full shadow-sm";
                 }
             } else {
-                document.getElementById(`set-bonus-${setName}`).innerText = "Duplicate Feathers!";
-                document.getElementById(`set-bonus-${setName}`).className = "text-xs font-semibold px-2 py-1 bg-red-100 text-red-800 rounded-full shadow-sm";
+                statusEl.innerText = "Duplicate Feathers!";
+                statusEl.className = "text-xs font-semibold px-2 py-1 bg-red-100 text-red-800 rounded-full shadow-sm";
             }
         } else {
-            const el = document.getElementById(`set-bonus-${setName}`);
-            if(el) {
-                el.innerText = "Incomplete Set";
-                el.className = "text-xs font-semibold px-2 py-1 bg-gray-100 text-gray-800 rounded-full shadow-sm";
-            }
+            statusEl.innerText = "Incomplete Set";
+            statusEl.className = "text-xs font-semibold px-2 py-1 bg-gray-100 text-gray-800 rounded-full shadow-sm";
         }
+
+        // Render Set Stats
+        let preset = state.presets[state.currentPreset] || { priorityStats: [], hiddenStats: [] };
+        statsEl.innerHTML = Object.entries(setStats)
+            .filter(([k, v]) => v > 0 && !(preset.hiddenStats && preset.hiddenStats.includes(k)))
+            .map(([k, v]) => {
+                const isPrio = preset.priorityStats && preset.priorityStats.includes(k);
+                return `<span class="${isPrio ? 'font-bold text-slate-900' : ''}">${STAT_NAMES[k]}: ${v.toFixed(1)}</span>`;
+            }).join('<span class="text-gray-300">|</span>');
+            
+        edenEl.innerText = `${setEden.toLocaleString()} Eden`;
+        totalEden += setEden;
     });
 
-    // Render Summary
+    // Render Global Summary
     const summaryContainer = document.getElementById('stats-summary');
     summaryContainer.innerHTML = '';
     
@@ -320,9 +371,16 @@ function updateSummary() {
         summaryContainer.innerHTML = '<p class="text-gray-500 italic">No feathers equipped.</p>';
     } else {
         Object.entries(totalStats)
-            .sort((a, b) => b[1] - a[1]) // Sort by value desc
+            .sort((a, b) => {
+                const aPrio = preset.priorityStats && preset.priorityStats.includes(a[0]);
+                const bPrio = preset.priorityStats && preset.priorityStats.includes(b[0]);
+                if (aPrio && !bPrio) return -1;
+                if (!aPrio && bPrio) return 1;
+                return b[1] - a[1];
+            })
             .forEach(([statKey, value]) => {
                 if (preset.hiddenStats && preset.hiddenStats.includes(statKey)) return;
+                if (value === 0) return;
                 
                 const isPriority = preset.priorityStats && preset.priorityStats.includes(statKey);
                 const statName = STAT_NAMES[statKey] || statKey;
@@ -341,8 +399,9 @@ function updateSummary() {
 }
 
 function applyPreset(presetName) {
+    state.currentPreset = presetName;
     if (presetName === 'none') {
-        state.currentPreset = 'none';
+        renderStatues();
         updateSummary();
         return;
     }
@@ -350,9 +409,6 @@ function applyPreset(presetName) {
     const presetConfig = state.presets[presetName];
     if (!presetConfig) return;
     
-    state.currentPreset = presetName;
-
-    // Auto-equip optimal feathers for unlocked sets
     [...state.sets.atk, ...state.sets.def].forEach(setName => {
         const isAtk = state.sets.atk.includes(setName);
         const type = isAtk ? 'atk' : 'def';
@@ -361,7 +417,7 @@ function applyPreset(presetName) {
             const optimalLoadout = presetConfig.optimal[type];
             for (let i = 0; i < 5; i++) {
                 state.build[setName][i].feather = optimalLoadout[i] || '';
-                state.build[setName][i].tier = 7; // Default target
+                state.build[setName][i].tier = 1;
             }
         }
     });
@@ -370,65 +426,72 @@ function applyPreset(presetName) {
     updateSummary();
 }
 
-// Event Listeners
 function setupEventListeners() {
-    // Tabs
     document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
+        btn.onclick = (e) => {
             e.preventDefault();
             if(btn.classList.contains('cursor-not-allowed')) return;
 
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active', 'border-b-2', 'border-blue-500', 'text-blue-600'));
-            btn.classList.add('active', 'border-b-2', 'border-blue-500', 'text-blue-600');
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
 
             document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
             document.getElementById(btn.dataset.target).classList.remove('hidden');
-        });
+        };
     });
 
-    // Set Toggles (Event Delegation to handle re-renders)
-    document.addEventListener('click', (e) => {
+    // Clear All
+    document.getElementById('clear-all-btn').onclick = () => {
+        if (confirm('Clear all feathers from all sets?')) {
+            initBuildState();
+            document.getElementById('class-preset').value = 'none';
+            state.currentPreset = 'none';
+            renderStatues();
+            updateSummary();
+        }
+    };
+
+    document.onclick = (e) => {
+        if (e.target.closest('.clear-set-btn')) {
+            const btn = e.target.closest('.clear-set-btn');
+            const setName = btn.dataset.set;
+            state.build[setName].forEach(slot => {
+                slot.feather = '';
+                slot.tier = 1;
+            });
+            renderStatues();
+            updateSummary();
+            return;
+        }
+
         if (e.target.classList.contains('toggle-set-btn')) {
             const setName = e.target.dataset.set;
             const type = e.target.dataset.type;
-            
             const index = state.unlockedSets[type].indexOf(setName);
-            if (index > -1) {
-                state.unlockedSets[type].splice(index, 1);
-            } else {
-                state.unlockedSets[type].push(setName);
-            }
-            
+            if (index > -1) state.unlockedSets[type].splice(index, 1);
+            else state.unlockedSets[type].push(setName);
             renderSetToggles();
             renderStatues();
             updateSummary();
         }
-    });
+    };
 
-    // Feather Selects & Tier Selects
-    document.addEventListener('change', (e) => {
+    document.onchange = (e) => {
         if (e.target.classList.contains('feather-select')) {
-            const setName = e.target.dataset.set;
-            const slot = parseInt(e.target.dataset.slot);
-            state.build[setName][slot].feather = e.target.value;
-            renderStatues();
+            const { set, slot } = e.target.dataset;
+            state.build[set][slot].feather = e.target.value;
             updateSummary();
         }
-        
         if (e.target.classList.contains('tier-select')) {
-            const setName = e.target.dataset.set;
-            const slot = parseInt(e.target.dataset.slot);
-            state.build[setName][slot].tier = parseInt(e.target.value);
+            const { set, slot } = e.target.dataset;
+            state.build[set][slot].tier = parseInt(e.target.value);
             renderStatues();
             updateSummary();
         }
-    });
-
-    // Preset Select
-    document.getElementById('class-preset').addEventListener('change', (e) => {
-        applyPreset(e.target.value);
-    });
+        if (e.target.id === 'class-preset') {
+            applyPreset(e.target.value);
+        }
+    };
 }
 
-// Boot
 window.onload = loadData;

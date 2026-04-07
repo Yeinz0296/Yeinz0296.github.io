@@ -8,28 +8,125 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;700&display=swap');
+        
+        :root {
+            --ro-blue: #3a5ba0;
+            --ro-blue-light: #4e7cc2;
+            --ro-bg: #f0f4f8;
+            --ro-window-bg: #ffffff;
+            --ro-border: #8fa6d0;
+            --ro-header: #e1e9f5;
+            --ro-accent: #ff9f43;
+        }
+
+        body {
+            background-color: var(--ro-bg);
+            background-image: radial-gradient(var(--ro-border) 0.5px, transparent 0.5px);
+            background-size: 20px 20px;
+            font-family: 'Quicksand', sans-serif;
+        }
+
+        .ro-window {
+            background: var(--ro-window-bg);
+            border: 2px solid var(--ro-blue);
+            border-radius: 4px;
+            box-shadow: 4px 4px 0px rgba(58, 91, 160, 0.2);
+        }
+
+        .ro-header {
+            background: linear-gradient(to bottom, var(--ro-blue-light), var(--ro-blue));
+            color: white;
+            padding: 6px 12px;
+            font-weight: bold;
+            text-shadow: 1px 1px 1px rgba(0,0,0,0.3);
+            border-bottom: 2px solid var(--ro-blue);
+        }
+
+        .ro-tab {
+            background: var(--ro-header);
+            border: 1px solid var(--ro-border);
+            border-bottom: none;
+            border-radius: 6px 6px 0 0;
+            margin-right: 4px;
+            transition: all 0.2s;
+        }
+
+        .ro-tab.active {
+            background: white;
+            border: 2px solid var(--ro-blue);
+            border-bottom: 2px solid white;
+            margin-bottom: -2px;
+            z-index: 10;
+            color: var(--ro-blue);
+            font-weight: bold;
+        }
+
+        .ro-slot {
+            background: #f8fafc;
+            border: 1px dashed var(--ro-border);
+            border-radius: 4px;
+        }
+
+        .ro-button {
+            background: linear-gradient(to bottom, #ffffff, #e1e9f5);
+            border: 1px solid var(--ro-blue);
+            border-radius: 4px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            transition: all 0.1s;
+        }
+
+        .ro-button:active {
+            transform: translateY(1px);
+            box-shadow: none;
+            background: #e1e9f5;
+        }
+
+        .ro-button-primary {
+            background: linear-gradient(to bottom, var(--ro-blue-light), var(--ro-blue));
+            color: white;
+            border: 1px solid #2a4175;
+        }
+
+        .ro-label {
+            color: var(--ro-blue);
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
         .hidden { display: none !important; }
-        .tab-btn.active { border-bottom: 2px solid #3b82f6; color: #3b82f6; }
-        .slot-card { transition: all 0.2s; }
-        .slot-card:hover { transform: translateY(-2px); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); }
+        
+        /* Pixel-style scrollbar */
+        ::-webkit-scrollbar { width: 10px; }
+        ::-webkit-scrollbar-track { background: var(--ro-header); }
+        ::-webkit-scrollbar-thumb { background: var(--ro-blue); border: 2px solid var(--ro-header); }
+
+        select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%233a5ba0'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0.5rem center;
+            background-size: 1em;
+        }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 font-sans min-h-screen">
+<body class="text-slate-700 min-h-screen">
     <!-- Navbar -->
-    <nav class="bg-white shadow-sm border-b">
+    <nav class="bg-white border-b-2 border-ro-blue mb-6 shadow-sm">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16">
-                <div class="flex">
-                    <div class="flex-shrink-0 flex items-center font-bold text-xl text-blue-600">
-                        ROOC Planner
+            <div class="flex justify-between h-14">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 flex items-center font-bold text-2xl text-ro-blue tracking-tight">
+                        <i class="fas fa-gem mr-2 text-ro-accent"></i>ROOC PLANNER
                     </div>
-                    <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
-                        <a href="#" class="tab-btn active inline-flex items-center px-1 pt-1 text-sm font-medium" data-target="tab-feather">Feather</a>
-                        <a href="#" class="tab-btn inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-500 hover:text-gray-700 opacity-50 cursor-not-allowed" title="Coming soon">Stats</a>
-                        <a href="#" class="tab-btn inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-500 hover:text-gray-700 opacity-50 cursor-not-allowed" title="Coming soon">Skill</a>
-                        <a href="#" class="tab-btn inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-500 hover:text-gray-700 opacity-50 cursor-not-allowed" title="Coming soon">Equipment</a>
-                        <a href="#" class="tab-btn inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-500 hover:text-gray-700" data-target="tab-support">Support Me</a>
-                    </div>
+                </div>
+                <div class="flex items-end space-x-1">
+                    <a href="#" class="tab-btn active px-4 py-2 text-sm ro-tab" data-target="tab-feather">Feather</a>
+                    <a href="#" class="tab-btn px-4 py-2 text-sm ro-tab opacity-50 cursor-not-allowed" title="Coming soon">Stats</a>
+                    <a href="#" class="tab-btn px-4 py-2 text-sm ro-tab opacity-50 cursor-not-allowed" title="Coming soon">Skill</a>
+                    <a href="#" class="tab-btn px-4 py-2 text-sm ro-tab" data-target="tab-support">Support</a>
                 </div>
             </div>
         </div>
@@ -45,13 +142,38 @@
 
         <!-- Feather Tab -->
         <div id="tab-feather" class="tab-content hidden">
+            <!-- Data Disclaimer Notice -->
+            <div class="ro-window mb-6 overflow-hidden border-ro-accent border-2">
+                <div class="ro-header bg-gradient-to-r from-orange-400 to-ro-accent flex items-center">
+                    <i class="fas fa-exclamation-circle mr-2"></i>
+                    <span class="text-sm font-bold tracking-wider uppercase text-white">Project Notice & Data Disclaimer</span>
+                </div>
+                <div class="p-4 bg-orange-50 text-sm text-slate-700 leading-relaxed">
+                    <p class="mb-2">
+                        <span class="font-bold text-ro-accent uppercase mr-1">Personal Research:</span> 
+                        This is a personal project. All data provided here is based on my own in-game research and testing. 
+                        Since the game is relatively new and resources are limited, some values (especially for higher tiers, set bonuses, and MIX feathers) 
+                        may be <strong>estimated or incorrect</strong>.
+                    </p>
+                    <p>
+                        <span class="font-bold text-ro-blue uppercase mr-1">Contribute:</span> 
+                        If you have more accurate data, find any errors, or have screenshots of higher tier stats, you are most welcome to 
+                        help improve this tool! Please share your findings with me via the contact info in the 
+                        <a href="#" class="text-ro-blue font-bold underline hover:text-ro-blue-light" onclick="document.querySelector('[data-target=\'tab-support\']').click()">Support</a> tab.
+                    </p>
+                </div>
+            </div>
+
             <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
                 
                 <!-- Left Sidebar: Controls & Summary -->
                 <div class="lg:col-span-1 space-y-6">
                     <!-- Class Preset -->
                     <div class="bg-white shadow rounded-lg p-5">
-                        <h3 class="text-lg font-medium text-gray-900 mb-4 border-b pb-2">Class Preset</h3>
+                        <div class="flex justify-between items-center mb-4 border-b pb-2">
+                            <h3 class="text-lg font-medium text-gray-900">Class Preset</h3>
+                            <button id="clear-all-btn" class="text-xs text-red-600 hover:text-red-800 font-medium"><i class="fas fa-trash-alt mr-1"></i>Clear All</button>
+                        </div>
                         <select id="class-preset" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-50 py-2 px-3">
                             <option value="none">Custom / None</option>
                             <option value="paladin">Paladin (Sacrifice Tank)</option>
