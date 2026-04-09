@@ -58,9 +58,10 @@ function updateManualStatsModal() {
     const special = ['max_hp_pct', 'max_sp_pct', 'cast_reduction'];
 
     const renderInput = (key) => `
-        <div class="flex items-center justify-between space-x-4 bg-slate-900/50 p-2 rounded-lg border border-slate-700/30">
-            <label class="text-[10px] font-bold text-slate-400 uppercase flex-1">${STAT_NAMES[key] || key}</label>
-            <input type="number" class="w-24 border-slate-700 rounded-lg bg-slate-950 py-1.5 px-3 text-sm font-bold text-center manual-stat-input" data-stat="${key}" value="${state.manualStats[key] || 0}">
+        <div class="flex items-center justify-between space-x-3" style="background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:7px;padding:7px 10px;">
+            <label style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);flex:1;">${STAT_NAMES[key] || key}</label>
+            <input type="number" class="manual-stat-input" data-stat="${key}" value="${state.manualStats[key] || 0}"
+                   style="width:72px;border:1px solid var(--border-hi);border-radius:6px;background:var(--panel-low);padding:4px 8px;font-size:12px;font-weight:700;text-align:center;color:var(--text);">
         </div>`;
 
     document.getElementById('manual-general-inputs').innerHTML = general.map(renderInput).join('');
@@ -77,7 +78,9 @@ function initBuildState() {
 }
 
 function calculateBaseStatBonuses() {
-    const { str, agi, vit, int, dex, luk } = state.baseStats;
+    const getVal = (stat) => (state.baseStats[stat].base || 0) + (state.baseStats[stat].bonus || 0);
+    const str = getVal('str'), agi = getVal('agi'), vit = getVal('vit'), int = getVal('int'), dex = getVal('dex'), luk = getVal('luk');
+    
     const bonuses = {};
 
     // HP: 1% increase for every VIT
@@ -142,9 +145,9 @@ function updateDerivedStatsUI(totalStats = {}) {
     if (!generalContainer) return;
 
     const renderStat = (key, val, suffix = '') => `
-        <div class="bg-slate-900/50 p-3 rounded-lg border border-slate-700/50">
+        <div style="background:var(--panel-low);border:1px solid var(--border);border-radius:8px;padding:10px 12px;">
             <label class="ro-label block mb-1">${STAT_NAMES[key] || key}</label>
-            <span class="text-sm font-black text-white">${val.toFixed(1)}${suffix}</span>
+            <span style="font-size:13px;font-weight:800;color:var(--text);">${val.toFixed(1)}${suffix}</span>
         </div>`;
 
     // General Stats
@@ -178,14 +181,14 @@ function updateDerivedStatsUI(totalStats = {}) {
         renderStat('max_hp_pct', totalStats.max_hp_pct || 0, '%'),
         renderStat('max_sp_pct', totalStats.max_sp_pct || 0, '%'),
         renderStat('cast_reduction', totalStats.cast_reduction || 0),
-        `<div class="bg-slate-900/30 p-3 rounded-lg border border-slate-700/30 flex items-center justify-center italic text-[10px] text-slate-500">
-            More special stats coming soon...
+        `<div style="background:rgba(255,255,255,0.01);border:1px solid var(--border);border-radius:8px;padding:10px 12px;display:flex;align-items:center;justify-content:center;" class="italic text-[10px]" style="color:var(--text-muted);">
+            <span style="color:var(--text-dim);">More stats coming soon…</span>
          </div>`
     ].join('');
 
     // Update Stat Points
     let totalPoints = 0;
-    Object.values(state.baseStats).forEach(v => totalPoints += calculateStatPointCost(v));
+    Object.values(state.baseStats).forEach(v => totalPoints += calculateStatPointCost(v.base || 1));
     document.getElementById('stat-points-used').innerText = totalPoints.toLocaleString();
     const maxPoints = 2500; 
     document.getElementById('stat-points-bar').style.width = `${Math.min(100, (totalPoints / maxPoints) * 100)}%`;
@@ -245,7 +248,8 @@ function loadFromHash() {
 
 function updateBaseStatsUI() {
     document.querySelectorAll('.base-stat-input').forEach(input => {
-        input.value = state.baseStats[input.dataset.stat] || 1;
+        const { stat, type } = input.dataset;
+        input.value = state.baseStats[stat][type] !== undefined ? state.baseStats[stat][type] : (type === 'base' ? 1 : 0);
     });
 }
 
@@ -315,10 +319,12 @@ function renderApp() {
 function renderSetToggles() {
     const createToggle = (setName, type) => {
         const isUnlocked = state.unlockedSets[type].includes(setName);
-        const activeClass = type === 'atk' ? 'bg-red-500 text-white border-red-600 shadow-lg shadow-red-500/20' : 'bg-blue-600 text-white border-blue-700 shadow-lg shadow-blue-500/20';
-        const inactiveClass = 'bg-slate-900 text-slate-500 border-slate-700 hover:bg-slate-800';
-        const color = isUnlocked ? activeClass : inactiveClass;
-        return `<button class="px-3 py-1.5 border rounded-lg text-[10px] font-bold uppercase transition-all toggle-set-btn ${color}" data-set="${setName}" data-type="${type}">${setName}</button>`;
+        const activeStyle = type === 'atk'
+            ? 'background:rgba(240,64,64,0.15);border-color:rgba(240,64,64,0.5);color:#fca5a5;box-shadow:0 0 10px rgba(240,64,64,0.15);'
+            : 'background:rgba(58,142,240,0.15);border-color:rgba(58,142,240,0.5);color:#93c5fd;box-shadow:0 0 10px rgba(58,142,240,0.15);';
+        const inactiveStyle = 'background:var(--panel-low);border-color:var(--border);color:var(--text-muted);';
+        const style = isUnlocked ? activeStyle : inactiveStyle;
+        return `<button class="px-2.5 py-1.5 border rounded-lg text-[9px] font-bold uppercase transition-all toggle-set-btn" style="${style}" data-set="${setName}" data-type="${type}">${setName}</button>`;
     };
     document.getElementById('atk-set-toggles').innerHTML = state.sets.atk.map(s => createToggle(s, 'atk')).join('');
     document.getElementById('def-set-toggles').innerHTML = state.sets.def.map(s => createToggle(s, 'def')).join('');
@@ -336,28 +342,28 @@ function renderStatues() {
         const currentMinTier = activeSlots.length > 0 ? Math.min(...activeSlots.map(f => parseInt(f.tier))) : 1;
 
         let html = `
-        <div class="ro-window ${type === 'atk' ? 'ro-window-atk' : 'ro-window-def'} animate-in mb-8 shadow-2xl">
+        <div class="ro-window ${type === 'atk' ? 'ro-window-atk' : 'ro-window-def'} animate-in">
             <div class="ro-header ${type === 'atk' ? 'ro-header-atk' : 'ro-header-def'}">
-                <div class="flex items-center space-x-3">
+                <div class="flex items-center space-x-2.5">
                     <span class="text-sm font-bold uppercase tracking-widest text-white" id="set-title-${setName}">${setName}</span>
-                    <div class="flex items-center bg-black/30 rounded-lg px-2 py-0.5 border border-white/10">
-                        <span class="text-[9px] font-bold text-white/50 mr-2 uppercase">SET TIER</span>
+                    <div class="flex items-center rounded-lg px-2 py-0.5" style="background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.08);">
+                        <span class="text-[9px] font-bold mr-1.5 uppercase" style="color:rgba(255,255,255,0.35);">T</span>
                         <select class="text-[10px] bg-transparent text-white font-bold focus:outline-none cursor-pointer set-tier-select border-none" data-set="${setName}">
-                            ${[...Array(20).keys()].map(t => `<option value="${t+1}" ${currentMinTier == t+1 ? 'selected' : ''} class="text-slate-200 bg-slate-800">T${t+1}</option>`).join('')}
+                            ${[...Array(20).keys()].map(t => `<option value="${t+1}" ${currentMinTier == t+1 ? 'selected' : ''} style="background:#0b1525;color:#c8d8f0;">T${t+1}</option>`).join('')}
                         </select>
                     </div>
                 </div>
-                <div class="flex items-center space-x-4">
-                    <div class="flex items-center bg-black/40 rounded-lg px-3 py-1 border border-white/5">
-                        <i class="fas fa-coins text-yellow-400 text-[10px] mr-2"></i>
-                        <span id="set-eden-${setName}" class="text-[10px] font-bold text-white uppercase tracking-tight">0</span>
+                <div class="flex items-center space-x-3">
+                    <div class="flex items-center rounded-lg px-2.5 py-1" style="background:rgba(0,0,0,0.35);border:1px solid rgba(255,255,255,0.06);">
+                        <i class="fas fa-coins text-[10px] mr-1.5" style="color:var(--gold-light);"></i>
+                        <span id="set-eden-${setName}" class="text-[10px] font-bold text-white tracking-tight">0</span>
                     </div>
-                    <button class="clear-set-btn w-7 h-7 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 transition-colors" data-set="${setName}" title="Clear Set">
+                    <button class="clear-set-btn w-7 h-7 flex items-center justify-center rounded-full transition-all" style="background:rgba(255,255,255,0.06);" data-set="${setName}" title="Clear Set">
                         <i class="fas fa-undo-alt text-xs text-white"></i>
                     </button>
                 </div>
             </div>
-            <div class="p-5 grid grid-cols-1 sm:grid-cols-5 gap-4 bg-slate-800/20">`;
+            <div class="p-4 grid grid-cols-1 sm:grid-cols-5 gap-3" style="background:rgba(0,0,0,0.15);">`;
 
         for (let i = 0; i < 5; i++) {
             const slot = state.build[setName][i];
@@ -371,34 +377,34 @@ function renderStatues() {
                         <label class="ro-label m-0">Slot ${i + 1}</label>
                         <span class="rarity-dot ${rarityDot}"></span>
                     </div>
-                    <select class="w-full text-[10px] border-slate-700 rounded-md bg-slate-900 py-1.5 px-2 mb-3 feather-select font-bold shadow-inner focus:ring-1 focus:ring-blue-500/50" data-set="${setName}" data-slot="${i}">
-                        <option value="" class="text-slate-500">-- Empty --</option>
+                    <select class="w-full text-[10px] border rounded-md py-1.5 px-2 mb-2.5 feather-select font-bold" style="background:var(--panel-low);border-color:var(--border-hi);color:var(--text);" data-set="${setName}" data-slot="${i}">
+                        <option value="" style="color:var(--text-muted);">-- Empty --</option>
                         ${availableFeathers.map(f => {
                             if (selectedInSet.includes(f) && slot.feather !== f) return '';
                             const selected = slot.feather === f ? 'selected' : '';
                             const rarityLabel = state.featherRarities[f] === 'gold' ? ' (G)' : ' (P)';
-                            return `<option value="${f}" ${selected} class="text-slate-200 bg-slate-800">${f}${rarityLabel}</option>`;
+                            return `<option value="${f}" ${selected} style="background:var(--panel);color:var(--text);">${f}${rarityLabel}</option>`;
                         }).join('')}
                     </select>
                     <label class="ro-label block mb-1">Tier</label>
                     <div class="relative">
-                        <select class="w-full text-[10px] border-slate-700 rounded-md bg-slate-900 py-1.5 px-2 tier-select font-semibold shadow-inner focus:ring-1 focus:ring-blue-500/50" data-set="${setName}" data-slot="${i}">
-                            ${[...Array(20).keys()].map(t => `<option value="${t+1}" ${slot.tier == t+1 ? 'selected' : ''} class="text-slate-200 bg-slate-800">Tier ${t+1}</option>`).join('')}
+                        <select class="w-full text-[10px] border rounded-md py-1.5 px-2 tier-select font-semibold" style="background:var(--panel-low);border-color:var(--border-hi);color:var(--text);" data-set="${setName}" data-slot="${i}">
+                            ${[...Array(20).keys()].map(t => `<option value="${t+1}" ${slot.tier == t+1 ? 'selected' : ''} style="background:var(--panel);color:var(--text);">Tier ${t+1}</option>`).join('')}
                         </select>
                     </div>
                 </div>`;
         }
         html += `</div>
-            <div class="px-5 py-3 bg-slate-900/30 border-t border-slate-700 flex flex-col space-y-2">
-                <div class="flex items-center text-[10px] text-slate-500 font-bold uppercase tracking-wider">
-                    <i class="fas fa-microchip mr-2"></i> Base Stats Breakdown
+            <div class="px-4 py-3 flex flex-col space-y-2" style="background:rgba(0,0,0,0.2);border-top:1px solid var(--border);">
+                <div class="flex items-center text-[9px] font-bold uppercase tracking-wider" style="color:var(--text-muted);">
+                    <i class="fas fa-microchip mr-2" style="color:var(--text-dim);"></i>Base Stats Breakdown
                 </div>
-                <div class="flex flex-wrap gap-x-3 gap-y-1 text-[10px] text-slate-400 font-medium" id="set-feathers-${setName}"></div>
-                <div class="pt-2 border-t border-slate-700">
-                    <div class="flex items-center text-[10px] text-blue-400 font-bold uppercase tracking-wider mb-1">
-                        <i class="fas fa-chart-line mr-2"></i> Final Set Stats (Inc. Bonus)
+                <div class="flex flex-wrap gap-1.5 text-[10px] font-medium" id="set-feathers-${setName}" style="color:var(--text-muted);"></div>
+                <div class="pt-2" style="border-top:1px solid var(--border);">
+                    <div class="flex items-center text-[9px] font-bold uppercase tracking-wider mb-1.5" style="color:var(--blue);">
+                        <i class="fas fa-chart-line mr-2"></i>Final Set Stats (incl. Bonus)
                     </div>
-                    <div class="flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-slate-200 font-bold" id="set-stats-${setName}"></div>
+                    <div class="flex flex-wrap gap-1.5 text-[10px] font-bold" id="set-stats-${setName}"></div>
                 </div>
             </div>
         </div>`;
@@ -513,8 +519,8 @@ function updateSummary() {
         Object.entries(flats).forEach(([k, v]) => finalSetStats[k] = (finalSetStats[k] || 0) + v);
         Object.entries(finalSetStats).forEach(([k, v]) => totalStats[k] = (totalStats[k] || 0) + v);
 
-        feathersDisplayEl.innerHTML = Object.entries(baseFeatherStats).filter(([k,v]) => v > 0).map(([k,v]) => `<span class="bg-slate-900 px-2 py-0.5 rounded border border-slate-800">${STAT_NAMES[k]}: ${v.toFixed(1)}</span>`).join('');
-        statsDisplayEl.innerHTML = Object.entries(finalSetStats).filter(([k,v]) => Math.floor(v) > 0).map(([k,v]) => `<span class="text-blue-300 bg-blue-900/40 px-2 py-0.5 rounded border border-blue-800/50 shadow-sm">${STAT_NAMES[k]}: ${Math.floor(v)}</span>`).join('');
+        feathersDisplayEl.innerHTML = Object.entries(baseFeatherStats).filter(([k,v]) => v > 0).map(([k,v]) => `<span style="background:var(--panel-low);border:1px solid var(--border);border-radius:4px;padding:2px 7px;font-size:10px;color:var(--text-muted);">${STAT_NAMES[k]}: ${v.toFixed(1)}</span>`).join('');
+        statsDisplayEl.innerHTML = Object.entries(finalSetStats).filter(([k,v]) => Math.floor(v) > 0).map(([k,v]) => `<span style="background:rgba(58,142,240,0.1);border:1px solid rgba(58,142,240,0.25);border-radius:4px;padding:2px 7px;font-size:10px;color:#93c5fd;">${STAT_NAMES[k]}: ${Math.floor(v)}</span>`).join('');
         edenEl.innerText = `${setEden.toLocaleString()}`;
         totalEden += setEden;
     });
@@ -540,7 +546,7 @@ function updateSummary() {
     
     document.getElementById('total-eden').innerText = totalEden.toLocaleString();
     const costBreakdownEl = document.getElementById('cost-breakdown');
-    costBreakdownEl.innerHTML = '<div class="font-bold text-slate-500 mb-3 uppercase tracking-widest text-[10px]">Material Requirement</div>';
+    costBreakdownEl.innerHTML = '<div class="ro-label mb-3">Material Requirement</div>';
     let hasCost = false;
     Object.entries(totalFeatherCosts).sort((a,b) => b[1].count - a[1].count).forEach(([name, data]) => {
         const owned = state.inventory[name] || 0;
@@ -550,15 +556,15 @@ function updateSummary() {
         const rarity = state.featherRarities[name];
         const rangeText = data.maxReached < data.requested ? ` <span class="text-[9px] text-slate-500 font-normal">T${data.maxReached}</span>` : '';
         costBreakdownEl.innerHTML += `
-            <div class="flex justify-between items-center py-1.5 border-b border-slate-700 last:border-0">
+            <div class="flex justify-between items-center py-1.5" style="border-bottom:1px solid var(--border);">
                 <div class="flex items-center">
                     <span class="rarity-dot ${rarity === 'gold' ? 'dot-gold' : 'dot-purple'}"></span>
-                    <span class="text-xs font-bold text-slate-300">${name}${rangeText}</span>
+                    <span style="font-size:11px;font-weight:700;color:var(--text);">${name}${rangeText}</span>
                 </div>
-                <span class="text-xs font-black text-white bg-slate-900 border border-slate-700 px-2 py-0.5 rounded">${needed.toLocaleString()}</span>
+                <span style="font-size:11px;font-weight:800;color:var(--text);background:var(--panel-low);border:1px solid var(--border);padding:1px 8px;border-radius:5px;">${needed.toLocaleString()}</span>
             </div>`;
     });
-    if (!hasCost) costBreakdownEl.innerHTML += '<div class="text-center py-4 text-xs italic text-green-400 font-bold bg-green-50/10 border border-green-500/20 rounded-lg">All materials acquired!</div>';
+    if (!hasCost) costBreakdownEl.innerHTML += '<div class="text-center py-3 text-xs italic font-bold" style="background:rgba(34,197,94,0.05);border:1px solid rgba(34,197,94,0.2);border-radius:8px;color:#22c55e;">All materials acquired!</div>';
     
     updateDerivedStatsUI(totalStats);
     saveToLocal();
@@ -573,12 +579,13 @@ function updateInventoryModal(filter = '') {
     container.innerHTML = feathers.map(f => {
         const rarity = state.featherRarities[f];
         return `
-        <div class="bg-slate-900 p-3 rounded-lg border border-slate-700 hover:border-blue-500/50 transition-colors shadow-inner">
+        <div style="background:var(--panel-low);border:1px solid var(--border);border-radius:8px;padding:10px;transition:border-color 0.2s;">
             <div class="flex items-center mb-2">
                 <span class="rarity-dot ${rarity === 'gold' ? 'dot-gold' : 'dot-purple'}"></span>
-                <label class="text-[11px] font-bold uppercase text-slate-300 truncate">${f}</label>
+                <label style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${f}</label>
             </div>
-            <input type="number" class="w-full border border-slate-700 rounded-md px-3 py-1.5 text-sm inv-input focus:ring-1 focus:ring-blue-500/50 outline-none bg-slate-800 text-white" 
+            <input type="number" class="w-full border rounded-md px-3 py-1.5 text-sm inv-input outline-none"
+                   style="background:var(--panel);border-color:var(--border-hi);color:var(--text);"
                    data-feather="${f}" value="${state.inventory[f] || 0}" min="0">
         </div>`;
     }).join('');
@@ -677,12 +684,14 @@ function setupEventListeners() {
         const listEl = document.getElementById('inv-list');
         if (!document.getElementById('inv-search')) {
             const searchContainer = document.createElement('div');
-            searchContainer.className = 'mb-6 sticky top-0 bg-slate-900/80 backdrop-blur-md pt-2 pb-4 z-10 border-b border-slate-700';
+            searchContainer.className = 'mb-4 sticky top-0 z-10 pt-1 pb-3';
+            searchContainer.style = 'background:rgba(11,21,37,0.95);backdrop-filter:blur(10px);border-bottom:1px solid var(--border);';
             searchContainer.innerHTML = `
                 <div class="relative">
-                    <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-500"></i>
-                    <input type="text" id="inv-search" placeholder="Search feathers..." 
-                           class="w-full pl-11 pr-4 py-3 bg-slate-800 border border-slate-700 rounded-xl focus:ring-1 focus:ring-blue-500/50 outline-none text-white text-sm">
+                    <i class="fas fa-search absolute left-3.5 top-1/2 -translate-y-1/2 text-xs" style="color:var(--text-muted);"></i>
+                    <input type="text" id="inv-search" placeholder="Search feathers…"
+                           class="w-full pl-10 pr-4 py-2.5 rounded-xl outline-none text-sm font-semibold"
+                           style="background:var(--panel-low);border:1px solid var(--border-hi);color:var(--text);">
                 </div>`;
             listEl.prepend(searchContainer);
             document.getElementById('inv-search').oninput = (e) => updateInventoryModal(e.target.value);
@@ -765,7 +774,8 @@ function setupEventListeners() {
 
     document.addEventListener('change', (e) => {
         if (e.target.classList.contains('base-stat-input')) {
-            state.baseStats[e.target.dataset.stat] = parseInt(e.target.value) || 1;
+            const { stat, type } = e.target.dataset;
+            state.baseStats[stat][type] = parseInt(e.target.value) || (type === 'base' ? 1 : 0);
             updateSummary();
         }
         else if (e.target.classList.contains('feather-select')) { 

@@ -3,303 +3,476 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ROOC Planner - Valkyrie Feather</title>
+    <title>ROOC Planner — Valkyrie Feather</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap');
-        
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Quicksand:wght@400;500;600;700&display=swap');
+
         :root {
-            --ro-blue: #4299e1;
-            --ro-blue-light: #63b3ed;
-            --ro-blue-dark: #2b6cb0;
-            --ro-bg: #0f172a;
-            --ro-window-bg: #1e293b;
-            --ro-border: #334155;
-            --ro-header: #1e293b;
-            --ro-accent: #f6ad55;
-            --ro-gold: #f6e05e;
-            --ro-purple: #b794f4;
-            --ro-red: #fc8181;
-            --ro-green: #68d391;
-            --ro-text-main: #f1f5f9;
-            --ro-text-muted: #94a3b8;
+            --bg:           #060d1b;
+            --panel:        #0b1525;
+            --panel-hi:     #111e36;
+            --panel-low:    #080f1e;
+            --border:       #1a2e50;
+            --border-hi:    #2a4878;
+            --gold:         #f0a800;
+            --gold-light:   #ffd06b;
+            --gold-dark:    #a07000;
+            --gold-dim:     #3d2800;
+            --purple:       #a855f7;
+            --purple-light: #d0a0ff;
+            --purple-dark:  #6d28d9;
+            --purple-dim:   #2d1060;
+            --red:          #f04040;
+            --red-dark:     #8b1a1a;
+            --blue:         #3b8ef0;
+            --blue-dark:    #1a3a8b;
+            --green:        #22c55e;
+            --teal:         #06b6d4;
+            --text:         #c8d8f0;
+            --text-muted:   #4a6080;
+            --text-dim:     #2a3a55;
         }
+
+        * { box-sizing: border-box; }
 
         body {
-            background-color: var(--ro-bg);
-            background-image: 
-                radial-gradient(var(--ro-border) 0.5px, transparent 0.5px),
-                linear-gradient(to bottom, #1e293b 0%, var(--ro-bg) 100%);
-            background-size: 20px 20px, 100% 100%;
+            background-color: var(--bg);
+            background-image:
+                radial-gradient(ellipse 80% 50% at 50% -10%, rgba(58, 100, 200, 0.12) 0%, transparent 60%),
+                linear-gradient(180deg, #0d1828 0%, var(--bg) 15%),
+                repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(26,46,80,0.3) 39px, rgba(26,46,80,0.3) 40px),
+                repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(26,46,80,0.3) 39px, rgba(26,46,80,0.3) 40px);
             background-attachment: fixed;
             font-family: 'Quicksand', sans-serif;
-            color: var(--ro-text-main);
+            color: var(--text);
             -webkit-tap-highlight-color: transparent;
+            min-height: 100vh;
         }
 
+        /* ── Panel / Window ────────────────────────────────────────────── */
         .ro-window {
-            background: var(--ro-window-bg);
-            border: 1px solid var(--ro-border);
-            border-radius: 12px;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
-            transition: transform 0.2s, box-shadow 0.2s;
+            background-color: var(--panel);
+            background-image:
+                linear-gradient(rgba(255,255,255,0.03) 0%, transparent 60%);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            box-shadow:
+                0 0 0 1px rgba(255,255,255,0.03) inset,
+                0 24px 48px rgba(0,0,0,0.7),
+                0 4px 8px rgba(0,0,0,0.5);
             overflow: hidden;
+            position: relative;
         }
-
-        @media (min-width: 1024px) {
-            .ro-window:hover {
-                box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
-                border-color: #475569;
-            }
+        /* Corner brackets */
+        .ro-window::before, .ro-window::after {
+            content: '';
+            position: absolute;
+            width: 14px; height: 14px;
+            pointer-events: none;
+            z-index: 10;
+        }
+        .ro-window::before {
+            top: -1px; left: -1px;
+            border-top: 2px solid var(--gold-dark);
+            border-left: 2px solid var(--gold-dark);
+            border-top-left-radius: 4px;
+        }
+        .ro-window::after {
+            bottom: -1px; right: -1px;
+            border-bottom: 2px solid var(--gold-dark);
+            border-right: 2px solid var(--gold-dark);
+            border-bottom-right-radius: 4px;
         }
 
         .ro-header {
-            background: #1e293b;
+            background: linear-gradient(135deg, #101c30 0%, #0e1828 100%);
             color: white;
-            padding: 12px 16px;
+            padding: 11px 16px;
             font-weight: 700;
-            letter-spacing: 0.025em;
+            letter-spacing: 0.04em;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1px solid var(--ro-border);
+            border-bottom: 1px solid var(--border);
         }
 
+        /* ATK / DEF color variants */
+        .ro-window-atk { border-color: rgba(200,50,50,0.4); }
+        .ro-window-atk::before, .ro-window-atk::after { border-color: #9b2c2c; }
+        .ro-header-atk {
+            background: linear-gradient(135deg, #3a0808 0%, #6b1414 60%, #8b1a1a 100%);
+            border-bottom-color: rgba(200,50,50,0.3);
+        }
+
+        .ro-window-def { border-color: rgba(50,100,220,0.4); }
+        .ro-window-def::before, .ro-window-def::after { border-color: #1d4ed8; }
+        .ro-header-def {
+            background: linear-gradient(135deg, #08143a 0%, #141d5c 60%, #1a2d6b 100%);
+            border-bottom-color: rgba(50,100,220,0.3);
+        }
+
+        /* ── Tabs ───────────────────────────────────────────────────────── */
         .ro-tab {
-            padding: 8px 20px;
-            font-weight: 600;
-            color: var(--ro-text-muted);
+            padding: 8px 18px;
+            font-weight: 700;
+            font-size: 0.75rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--text-muted);
             border-bottom: 2px solid transparent;
-            transition: all 0.3s;
-            position: relative;
-        }
-
-        .ro-tab.active {
-            color: var(--ro-blue);
-            border-bottom: 2px solid var(--ro-blue);
-            background: rgba(66, 153, 225, 0.15);
-        }
-
-        .ro-window-atk { border-left: 4px solid var(--ro-red); }
-        .ro-header-atk { background: linear-gradient(135deg, #742a2a, #9b2c2c); }
-
-        .ro-window-def { border-left: 4px solid var(--ro-blue); }
-        .ro-header-def { background: linear-gradient(135deg, #2c5282, #2b6cb0); }
-
-        .ro-slot {
-            background: #0f172a;
-            border: 1px solid #334155;
-            border-radius: 8px;
-            padding: 12px;
             transition: all 0.2s;
         }
+        .ro-tab:hover { color: var(--text); }
+        .ro-tab.active {
+            color: var(--gold-light);
+            border-bottom-color: var(--gold);
+            background: rgba(240,168,0,0.07);
+        }
 
+        /* ── Slot Cells ─────────────────────────────────────────────────── */
+        .ro-slot {
+            background: var(--panel-low);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
         .ro-slot-gold {
-            background: linear-gradient(to bottom right, #2d2613, #1e1b10);
-            border-color: #744210;
+            background: linear-gradient(135deg, #1a1204, #251a08);
+            border-color: var(--gold-dark);
+            box-shadow: 0 0 12px rgba(240,168,0,0.15) inset, 0 2px 8px rgba(0,0,0,0.4);
         }
-
         .ro-slot-purple {
-            background: linear-gradient(to bottom right, #21163e, #1a1429);
-            border-color: #44337a;
+            background: linear-gradient(135deg, #130928, #1c1030);
+            border-color: var(--purple-dark);
+            box-shadow: 0 0 12px rgba(168,85,247,0.15) inset, 0 2px 8px rgba(0,0,0,0.4);
         }
 
+        /* ── Buttons ────────────────────────────────────────────────────── */
         .ro-button {
             display: inline-flex;
             align-items: center;
             justify-content: center;
             padding: 8px 16px;
             border-radius: 8px;
-            font-weight: 600;
-            font-size: 0.875rem;
-            transition: all 0.2s;
-            cursor: pointer;
-        }
-
-        .ro-button-outline {
-            border: 1px solid var(--ro-border);
-            background: rgba(255, 255, 255, 0.05);
-            color: var(--ro-text-main);
-        }
-
-        .ro-button-primary {
-            background: var(--ro-blue);
-            color: white;
-            border: 1px solid var(--ro-blue-dark);
-        }
-
-        .ro-label {
-            color: var(--ro-text-muted);
             font-weight: 700;
-            font-size: 0.7rem;
+            font-size: 0.8rem;
+            transition: all 0.18s;
+            cursor: pointer;
+            letter-spacing: 0.04em;
+        }
+        .ro-button-outline {
+            border: 1px solid var(--border-hi);
+            background: rgba(255,255,255,0.04);
+            color: var(--text);
+        }
+        .ro-button-outline:hover {
+            background: rgba(255,255,255,0.08);
+            border-color: #3a5a90;
+        }
+        .ro-button-primary {
+            background: linear-gradient(135deg, #c88000, #f0a800, #e09000);
+            color: #1a0a00;
+            border: 1px solid var(--gold-dark);
+            box-shadow: 0 4px 16px rgba(240,168,0,0.3);
+            font-weight: 800;
+        }
+        .ro-button-primary:hover {
+            background: linear-gradient(135deg, #d89000, #ffc000, #e8a000);
+            box-shadow: 0 6px 20px rgba(240,168,0,0.45);
+            transform: translateY(-1px);
+        }
+        .ro-button-primary:active { transform: translateY(0); }
+
+        /* ── Labels & Typography ────────────────────────────────────────── */
+        .ro-label {
+            color: var(--text-muted);
+            font-weight: 700;
+            font-size: 0.65rem;
             text-transform: uppercase;
-            letter-spacing: 0.05em;
-            margin-bottom: 4px;
+            letter-spacing: 0.06em;
+            margin-bottom: 3px;
+        }
+        .game-title {
+            font-family: 'Cinzel', serif;
+            letter-spacing: 0.06em;
         }
 
+        /* ── Stat Cards ─────────────────────────────────────────────────── */
         .stat-card {
-            background: #1e293b;
-            padding: 12px;
+            background: var(--panel-hi);
+            padding: 9px 12px;
             border-radius: 8px;
-            border: 1px solid var(--ro-border);
+            border: 1px solid var(--border);
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
-
         .stat-card.priority {
-            background: #2d2613;
-            border-color: #744210;
+            background: linear-gradient(135deg, #1e1200, #2a1800);
+            border-color: var(--gold-dark);
+            box-shadow: 0 0 10px rgba(240,168,0,0.1);
         }
 
-        /* Modern scrollbar */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: var(--ro-bg); }
-        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
-
-        select, input {
-            background-color: #0f172a;
-            color: var(--ro-text-main);
-            border-color: #334155;
-            transition: all 0.2s;
-        }
-        
-        select option {
-            background-color: #1e293b;
-            color: var(--ro-text-main);
-        }
-
-        .animate-in {
-            animation: fadeIn 0.3s ease-out;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
+        /* ── Rarity Dots ────────────────────────────────────────────────── */
         .rarity-dot {
-            height: 8px;
-            width: 8px;
+            height: 8px; width: 8px;
             border-radius: 50%;
             display: inline-block;
             margin-right: 6px;
+            flex-shrink: 0;
         }
-        .dot-gold { background-color: var(--ro-gold); box-shadow: 0 0 8px rgba(246, 224, 94, 0.6); }
-        .dot-purple { background-color: var(--ro-purple); box-shadow: 0 0 8px rgba(183, 148, 244, 0.6); }
+        .dot-gold   { background: var(--gold);   box-shadow: 0 0 8px rgba(240,168,0,0.7); }
+        .dot-purple { background: var(--purple);  box-shadow: 0 0 8px rgba(168,85,247,0.7); }
 
-        /* Mobile specific styles */
-        @media (max-width: 1023px) {
-            .mobile-nav-hidden { display: none !important; }
-            .mobile-nav-active { display: block !important; }
-            .ro-window { border-radius: 0; border-left: none; border-right: none; }
+        /* ── Mobile Bottom Nav ──────────────────────────────────────────── */
+        .glass-nav {
+            background: rgba(6,13,27,0.92);
+            backdrop-filter: blur(16px);
+            border-top: 1px solid var(--border-hi);
         }
-
         .mobile-tab-btn {
             flex: 1;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 8px 0;
-            font-size: 10px;
-            font-weight: 700;
+            padding: 6px 0;
+            font-size: 9px;
+            font-weight: 800;
             text-transform: uppercase;
-            color: var(--ro-text-muted);
+            letter-spacing: 0.06em;
+            color: var(--text-muted);
+            transition: all 0.2s;
+            position: relative;
+        }
+        .mobile-tab-btn i { font-size: 17px; margin-bottom: 3px; transition: all 0.2s; }
+        .mobile-tab-btn.active { color: var(--gold-light); }
+        .mobile-tab-btn.active i { color: var(--gold); filter: drop-shadow(0 0 6px rgba(240,168,0,0.8)); }
+        .mobile-tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 25%; right: 25%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--gold), transparent);
+            border-radius: 2px;
+        }
+
+        /* ── View Toggle (mobile feather tab) ──────────────────────────── */
+        .view-toggle-btn {
+            flex: 1;
+            padding: 8px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
             transition: all 0.2s;
         }
-
-        .mobile-tab-btn.active { color: var(--ro-blue); }
-        .mobile-tab-btn i { font-size: 18px; margin-bottom: 4px; }
-
-        .glass-nav {
-            background: rgba(15, 23, 42, 0.9);
-            backdrop-filter: blur(12px);
-            border-top: 1px solid var(--ro-border);
+        .view-toggle-btn.active {
+            background: linear-gradient(135deg, #1e1200, #2e1a00);
+            border-color: var(--gold-dark);
+            color: var(--gold-light);
+            box-shadow: 0 0 12px rgba(240,168,0,0.2);
         }
 
-        .view-toggle-btn.active {
-            background-color: var(--ro-blue);
-            color: white;
-            border-color: var(--ro-blue-dark);
+        /* ── Mobile visibility ──────────────────────────────────────────── */
+        @media (max-width: 1023px) {
+            .mobile-nav-hidden { display: none !important; }
+            .mobile-nav-active { display: block !important; }
+            .ro-window { border-radius: 0; border-left: none; border-right: none; }
+            .ro-window::before, .ro-window::after { display: none; }
+        }
+
+        /* ── Scrollbar ──────────────────────────────────────────────────── */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: #1e3356; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #2a4878; }
+
+        /* ── Inputs ─────────────────────────────────────────────────────── */
+        select, input {
+            background-color: var(--panel-low);
+            color: var(--text);
+            border-color: var(--border);
+            transition: border-color 0.2s, box-shadow 0.2s;
+            outline: none;
+        }
+        select:focus, input:focus {
+            border-color: var(--border-hi);
+            box-shadow: 0 0 0 2px rgba(58,142,240,0.15);
+        }
+        select option {
+            background-color: var(--panel);
+            color: var(--text);
+        }
+
+        /* ── Animations ─────────────────────────────────────────────────── */
+        .animate-in {
+            animation: fadeUp 0.25s ease-out;
+        }
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(8px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ── Loading ────────────────────────────────────────────────────── */
+        .loader-ring {
+            border-radius: 50%;
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            border-style: solid;
+            border-color: transparent;
+        }
+
+        /* ── Divider ────────────────────────────────────────────────────── */
+        .gold-divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--gold-dark), transparent);
+        }
+
+        /* ── Section card (config panels) ──────────────────────────────── */
+        .config-card {
+            background: var(--panel);
+            background-image: linear-gradient(rgba(255,255,255,0.02) 0%, transparent 40%);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+        }
+        .config-card-header {
+            font-family: 'Cinzel', serif;
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
     </style>
 </head>
 <body class="min-h-screen pb-20 lg:pb-0">
-    <!-- Navbar -->
-    <nav class="bg-slate-900/80 backdrop-blur-md border-b border-slate-800 sticky top-0 z-40">
+
+    <!-- ── Navbar ──────────────────────────────────────────────────────── -->
+    <nav style="background:rgba(6,13,27,0.88); border-bottom:1px solid var(--border-hi); backdrop-filter:blur(16px);" class="sticky top-0 z-40">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-14 lg:h-16">
-                <div class="flex items-center">
-                    <div class="flex-shrink-0 flex items-center font-bold text-lg lg:text-xl text-ro-blue tracking-tighter">
-                        <div class="w-7 h-7 lg:w-8 lg:h-8 bg-ro-blue rounded-lg flex items-center justify-center mr-2 lg:mr-3 shadow-lg shadow-blue-500/20">
-                            <i class="fas fa-gem text-white text-[10px] lg:text-xs"></i>
-                        </div>
-                        ROOC <span class="text-ro-accent ml-1">PLANNER</span>
+            <div class="flex justify-between h-14 lg:h-16 items-center">
+
+                <!-- Logo -->
+                <div class="flex items-center space-x-2.5">
+                    <div class="w-8 h-8 rounded-lg flex items-center justify-center"
+                         style="background:linear-gradient(135deg,#a07000,#f0a800); box-shadow:0 4px 14px rgba(240,168,0,0.4);">
+                        <i class="fas fa-feather-alt text-white text-xs"></i>
+                    </div>
+                    <div class="game-title text-sm font-black leading-tight">
+                        <span style="color:var(--gold-light);">ROOC</span>
+                        <span style="color:var(--text); opacity:0.5; margin:0 4px; font-size:10px;">·</span>
+                        <span style="color:var(--text); font-size:11px; letter-spacing:0.12em; font-weight:700;">PLANNER</span>
                     </div>
                 </div>
-                <div class="flex items-center space-x-1 lg:space-x-4">
-                    <!-- Desktop Tabs -->
-                    <div class="hidden lg:flex items-center space-x-1">
-                        <a href="#" class="tab-btn active ro-tab" data-target="tab-stats">Stats</a>
-                        <a href="#" class="tab-btn ro-tab" data-target="tab-feather">Feathers</a>
-                        <a href="#" class="tab-btn ro-tab opacity-30 cursor-not-allowed" title="Coming soon">Equipment</a>
-                        <a href="#" class="tab-btn ro-tab" data-target="tab-support">Support</a>
-                    </div>
-                    <!-- Mobile Modal Triggers -->
-                    <div class="flex lg:hidden items-center space-x-2">
-                        <button id="inv-btn-mob" class="w-9 h-9 flex items-center justify-center rounded-xl bg-green-500/10 text-green-400 border border-green-500/20"><i class="fas fa-box text-sm"></i></button>
-                        <button id="share-btn-mob" class="w-9 h-9 flex items-center justify-center rounded-xl bg-blue-500/10 text-blue-400 border border-blue-500/20"><i class="fas fa-share-alt text-sm"></i></button>
-                    </div>
+
+                <!-- Desktop Tabs -->
+                <div class="hidden lg:flex items-center">
+                    <a href="#" class="tab-btn active ro-tab" data-target="tab-stats">Stats</a>
+                    <a href="#" class="tab-btn ro-tab" data-target="tab-feather">Feathers</a>
+                    <a href="#" class="tab-btn ro-tab opacity-30 cursor-not-allowed" title="Coming soon">Equipment</a>
+                    <a href="#" class="tab-btn ro-tab" data-target="tab-support">Support</a>
+                </div>
+
+                <!-- Mobile action icons -->
+                <div class="flex lg:hidden items-center space-x-2">
+                    <button id="inv-btn-mob" class="w-9 h-9 flex items-center justify-center rounded-lg transition-all"
+                            style="background:rgba(34,197,94,0.08); border:1px solid rgba(34,197,94,0.2); color:#22c55e;">
+                        <i class="fas fa-box text-sm"></i>
+                    </button>
+                    <button id="share-btn-mob" class="w-9 h-9 flex items-center justify-center rounded-lg transition-all"
+                            style="background:rgba(58,142,240,0.08); border:1px solid rgba(58,142,240,0.2); color:#60a5fa;">
+                        <i class="fas fa-share-alt text-sm"></i>
+                    </button>
                 </div>
             </div>
         </div>
     </nav>
 
-    <!-- Main Content -->
+    <!-- ── Main Content ─────────────────────────────────────────────────── -->
     <main class="max-w-7xl mx-auto px-0 lg:px-8 lg:py-8">
-        <!-- Loading State -->
-        <div id="loading" class="flex flex-col justify-center items-center py-32">
-            <div class="relative">
-                <div class="w-16 h-16 border-4 border-slate-800 border-t-ro-blue rounded-full animate-spin"></div>
-                <i class="fas fa-gem absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-ro-blue opacity-40"></i>
+
+        <!-- Loading -->
+        <div id="loading" class="flex flex-col justify-center items-center py-40">
+            <div class="relative w-20 h-20 mb-8">
+                <!-- Outer ring -->
+                <div class="loader-ring" style="width:80px;height:80px;border-width:2px;border-top-color:var(--gold);border-right-color:rgba(240,168,0,0.2);animation:spin 1.2s linear infinite;"></div>
+                <!-- Middle ring -->
+                <div class="loader-ring" style="width:58px;height:58px;border-width:2px;border-top-color:var(--purple);border-left-color:rgba(168,85,247,0.2);animation:spin 0.8s linear infinite reverse;"></div>
+                <!-- Inner gem -->
+                <div class="loader-ring" style="width:32px;height:32px;border:none;background:radial-gradient(circle,rgba(240,168,0,0.2),transparent);">
+                    <i class="fas fa-feather-alt absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+                       style="color:var(--gold-light);font-size:14px;filter:drop-shadow(0 0 6px var(--gold));"></i>
+                </div>
             </div>
-            <span class="mt-6 text-sm font-bold text-slate-500 uppercase tracking-widest">Initialising Database...</span>
+            <p class="game-title text-xs tracking-[0.2em] uppercase" style="color:var(--text-muted);">Initialising Database</p>
+            <p class="text-[10px] mt-2" style="color:var(--text-dim);">Loading feather data…</p>
         </div>
+        <style>@keyframes spin{to{transform:translate(-50%,-50%) rotate(360deg);}}</style>
 
-        <!-- Feather Tab -->
+        <!-- ── Feather Tab ────────────────────────────────────────────────── -->
         <div id="tab-feather" class="tab-content hidden">
-            <!-- Mobile Toggle View -->
-            <div class="lg:hidden flex p-2 space-x-2 bg-slate-900/50 backdrop-blur-sm sticky top-14 z-30 border-b border-slate-800">
-                <button class="view-toggle-btn active flex-1 py-2.5 rounded-xl font-bold text-[10px] uppercase tracking-widest bg-slate-800 text-slate-400 border border-slate-700 transition-all" data-view="statues">
-                    <i class="fas fa-chess-knight mr-2"></i>Statues
+            <!-- Mobile view toggle -->
+            <div class="lg:hidden flex p-2 space-x-2 sticky z-30"
+                 style="top:56px;background:rgba(6,13,27,0.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);">
+                <button class="view-toggle-btn active" data-view="statues">
+                    <i class="fas fa-chess-knight mr-1.5"></i>Statues
                 </button>
-                <button class="view-toggle-btn flex-1 py-2.5 rounded-xl font-bold text-[10px] uppercase tracking-widest bg-slate-800 text-slate-400 border border-slate-700 transition-all" data-view="summary">
-                    <i class="fas fa-chart-bar mr-2"></i>Attributes
+                <button class="view-toggle-btn" data-view="summary">
+                    <i class="fas fa-chart-bar mr-1.5"></i>Attributes
                 </button>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
-                
-                <!-- Left Sidebar: Controls & Summary -->
-                <div id="view-summary" class="lg:col-span-1 space-y-4 lg:space-y-8 p-4 lg:p-0 mobile-nav-hidden lg:block">
-                    <!-- Class & Mode Selection -->
-                    <div class="bg-slate-800/50 border border-slate-700 rounded-2xl lg:rounded-xl p-5 lg:p-6 shadow-xl">
-                        <div class="flex justify-between items-center mb-6">
-                            <h3 class="font-black text-xs uppercase tracking-widest text-slate-500">Configuration</h3>
-                            <div class="hidden lg:flex space-x-1">
-                                <button id="inv-btn" class="w-8 h-8 flex items-center justify-center rounded-lg bg-green-500/10 text-green-400 hover:bg-green-500/20 transition-colors"><i class="fas fa-box text-xs"></i></button>
-                                <button id="share-btn" class="w-8 h-8 flex items-center justify-center rounded-lg bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 transition-colors"><i class="fas fa-share-alt text-xs"></i></button>
-                                <button id="clear-all-btn" class="w-8 h-8 flex items-center justify-center rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors"><i class="fas fa-trash-alt text-xs"></i></button>
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 lg:gap-8">
+
+                <!-- Sidebar: Controls & Summary -->
+                <div id="view-summary" class="lg:col-span-1 space-y-4 p-4 lg:p-0 mobile-nav-hidden lg:block">
+
+                    <!-- Configuration -->
+                    <div class="config-card">
+                        <div class="config-card-header">
+                            <span><i class="fas fa-cog mr-2 opacity-50"></i>Configuration</span>
+                            <div class="hidden lg:flex items-center space-x-1.5">
+                                <button id="inv-btn" class="w-7 h-7 flex items-center justify-center rounded-lg transition-all"
+                                        title="Inventory"
+                                        style="background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.2);color:#22c55e;">
+                                    <i class="fas fa-box text-[10px]"></i>
+                                </button>
+                                <button id="share-btn" class="w-7 h-7 flex items-center justify-center rounded-lg transition-all"
+                                        title="Share Build"
+                                        style="background:rgba(58,142,240,0.08);border:1px solid rgba(58,142,240,0.2);color:#60a5fa;">
+                                    <i class="fas fa-share-alt text-[10px]"></i>
+                                </button>
+                                <button id="clear-all-btn" class="w-7 h-7 flex items-center justify-center rounded-lg transition-all"
+                                        title="Clear All"
+                                        style="background:rgba(240,64,64,0.08);border:1px solid rgba(240,64,64,0.2);color:#f87171;">
+                                    <i class="fas fa-trash-alt text-[10px]"></i>
+                                </button>
                             </div>
                         </div>
-                        
-                        <div class="space-y-4">
+                        <div class="space-y-3">
                             <div>
                                 <label class="ro-label">Focus Mode</label>
-                                <select id="class-mode" class="w-full border-slate-700 rounded-xl bg-slate-900 py-3 px-4 text-sm font-semibold outline-none transition-all focus:border-ro-blue">
+                                <select id="class-mode" class="w-full border rounded-lg py-2.5 px-3 text-sm font-semibold"
+                                        style="border-color:var(--border-hi);background:var(--panel-low);">
                                     <option value="pve">PvE Focus</option>
                                     <option value="pvp">PvP Focus</option>
                                     <option value="both">Hybrid Focus</option>
@@ -307,201 +480,202 @@
                             </div>
                             <div>
                                 <label class="ro-label">Recommended Build</label>
-                                <select id="class-preset" class="w-full border-slate-700 rounded-xl bg-slate-900 py-3 px-4 text-sm font-semibold outline-none transition-all focus:border-ro-blue">
-                                    <!-- Populated via JS -->
+                                <select id="class-preset" class="w-full border rounded-lg py-2.5 px-3 text-sm font-semibold"
+                                        style="border-color:var(--border-hi);background:var(--panel-low);">
                                 </select>
                             </div>
-                            <div class="pt-2 grid grid-cols-2 gap-3">
-                                <button id="optimize-btn" class="ro-button ro-button-primary w-full py-3 rounded-xl shadow-lg shadow-blue-500/20">
-                                    <i class="fas fa-magic mr-2"></i>Apply
+                            <div class="grid grid-cols-2 gap-2 pt-1">
+                                <button id="optimize-btn" class="ro-button ro-button-primary w-full py-2.5 rounded-lg">
+                                    <i class="fas fa-magic mr-1.5"></i>Apply
                                 </button>
-                                <button id="print-btn" class="ro-button ro-button-outline w-full py-3 rounded-xl">
-                                    <i class="fas fa-camera mr-2"></i>Print
+                                <button id="print-btn" class="ro-button ro-button-outline w-full py-2.5 rounded-lg">
+                                    <i class="fas fa-camera mr-1.5"></i>Print
                                 </button>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Set Unlocks -->
-                    <div class="bg-slate-800/50 border border-slate-700 rounded-2xl lg:rounded-xl p-5 lg:p-6 shadow-xl">
-                        <h3 class="font-black text-xs uppercase tracking-widest text-slate-500 mb-6">Statue Management</h3>
-                        <div class="space-y-6">
+                    <!-- Statue Management -->
+                    <div class="config-card">
+                        <div class="config-card-header">
+                            <span><i class="fas fa-unlock-alt mr-2 opacity-50"></i>Statue Management</span>
+                        </div>
+                        <div class="space-y-4">
                             <div>
-                                <h4 class="text-[10px] font-black text-red-400 mb-3 uppercase tracking-tighter flex items-center">
-                                    <span class="w-1 h-3 bg-red-400 rounded-full mr-2"></span> Offensive Statues
+                                <h4 class="flex items-center mb-2" style="font-size:9px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;color:var(--red);">
+                                    <span class="w-1 h-3 rounded-full mr-2" style="background:var(--red);box-shadow:0 0 6px var(--red);"></span>
+                                    Offensive Statues
                                 </h4>
-                                <div class="flex flex-wrap gap-2" id="atk-set-toggles"></div>
+                                <div class="flex flex-wrap gap-1.5" id="atk-set-toggles"></div>
                             </div>
+                            <div class="gold-divider"></div>
                             <div>
-                                <h4 class="text-[10px] font-black text-blue-400 mb-3 uppercase tracking-tighter flex items-center">
-                                    <span class="w-1 h-3 bg-blue-400 rounded-full mr-2"></span> Defensive Statues
+                                <h4 class="flex items-center mb-2" style="font-size:9px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;color:var(--blue);">
+                                    <span class="w-1 h-3 rounded-full mr-2" style="background:var(--blue);box-shadow:0 0 6px var(--blue);"></span>
+                                    Defensive Statues
                                 </h4>
-                                <div class="flex flex-wrap gap-2" id="def-set-toggles"></div>
+                                <div class="flex flex-wrap gap-1.5" id="def-set-toggles"></div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Stats Summary -->
-                    <div class="bg-slate-800/50 border border-slate-700 rounded-2xl lg:rounded-xl p-5 lg:p-6 shadow-xl lg:sticky lg:top-24">
-                        <h3 class="font-black text-xs uppercase tracking-widest text-slate-500 mb-6">Final Attributes</h3>
-                        <div id="stats-summary" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-2 mb-8"></div>
-                        
-                        <div class="pt-6 border-t border-slate-700">
-                            <div id="cost-breakdown" class="space-y-1"></div>
-                            <div class="mt-6 bg-slate-900 rounded-2xl p-5 border border-slate-700 shadow-inner">
-                                <div class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Eden Coins Required</div>
-                                <div class="flex items-baseline">
-                                    <span id="total-eden" class="text-2xl font-black text-yellow-400">0</span>
-                                    <span class="ml-2 text-[10px] text-slate-400 font-bold uppercase">Coins</span>
-                                </div>
+                    <!-- Final Attributes & Cost -->
+                    <div class="config-card lg:sticky lg:top-24">
+                        <div class="config-card-header">
+                            <span><i class="fas fa-scroll mr-2 opacity-50"></i>Final Attributes</span>
+                        </div>
+                        <div id="stats-summary" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-1.5 mb-6"></div>
+
+                        <div class="gold-divider mb-4"></div>
+
+                        <div id="cost-breakdown" class="space-y-0.5 mb-4"></div>
+
+                        <!-- Total Eden -->
+                        <div class="rounded-xl p-4" style="background:var(--panel-low);border:1px solid var(--border);">
+                            <div class="ro-label mb-1">Eden Coins Required</div>
+                            <div class="flex items-baseline space-x-2">
+                                <span id="total-eden" class="text-2xl font-black" style="color:var(--gold-light);text-shadow:0 0 20px rgba(240,168,0,0.4);">0</span>
+                                <span class="text-[9px] font-bold uppercase tracking-widest" style="color:var(--text-muted);">Coins</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Right Area: Statues Config -->
+                <!-- Right Area: Statues -->
                 <div id="view-statues" class="lg:col-span-3 mobile-nav-active lg:block">
-                    <div id="statues-container" class="space-y-4 lg:space-y-8">
-                        <!-- Rendered via JS -->
-                    </div>
+                    <div id="statues-container" class="space-y-4 lg:space-y-6"></div>
                 </div>
             </div>
         </div>
 
-        <!-- Stats Tab -->
+        <!-- ── Stats Tab ──────────────────────────────────────────────────── -->
         <div id="tab-stats" class="tab-content hidden animate-in p-4 lg:p-0">
-            <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
-                <!-- Stat Inputs -->
-                <div class="lg:col-span-1 space-y-6">
-                    <div class="bg-slate-800/50 border border-slate-700 rounded-2xl lg:rounded-xl p-5 lg:p-6 shadow-xl">
-                        <h3 class="font-black text-xs uppercase tracking-widest text-slate-500 mb-6 flex justify-between">
-                            <span>Base Stats</span>
-                            <span class="text-[9px] opacity-50">Base + Bonus</span>
-                        </h3>
-                        <div class="space-y-3" id="base-stats-inputs">
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 lg:gap-8">
+
+                <!-- Base Stat Inputs -->
+                <div class="lg:col-span-1">
+                    <div class="config-card">
+                        <div class="config-card-header">
+                            <span><i class="fas fa-user mr-2 opacity-50"></i>Base Stats</span>
+                            <span style="font-size:8px;color:var(--text-dim);">Base + Bonus</span>
+                        </div>
+                        <div class="space-y-2.5" id="base-stats-inputs">
                             <!-- STR -->
                             <div class="flex items-center space-x-2">
-                                <label class="ro-label mb-0 w-8">STR</label>
-                                <input type="number" class="flex-1 border-slate-700 rounded-lg bg-slate-900 py-1.5 px-2 text-sm font-bold text-center base-stat-input" data-stat="str" data-type="base" value="1" min="1" max="99" title="Allocated Points">
-                                <span class="text-slate-600 font-bold text-xs">+</span>
-                                <input type="number" class="w-16 border-slate-700 rounded-lg bg-slate-800/50 py-1.5 px-2 text-sm font-bold text-center base-stat-input text-blue-400" data-stat="str" data-type="bonus" value="0" min="0" title="Bonus from Gear/Cards">
+                                <label class="ro-label mb-0 w-9" style="color:var(--red);opacity:0.9;">STR</label>
+                                <input type="number" class="flex-1 border rounded-md py-1.5 px-2 text-sm font-bold text-center base-stat-input" data-stat="str" data-type="base" value="1" min="1" max="99" style="border-color:var(--border-hi);background:var(--panel-low);">
+                                <span style="color:var(--border-hi);font-weight:700;font-size:11px;">+</span>
+                                <input type="number" class="w-14 border rounded-md py-1.5 px-2 text-sm font-bold text-center base-stat-input" data-stat="str" data-type="bonus" value="0" min="0" style="border-color:var(--border);background:var(--panel);color:#60a5fa;">
                             </div>
                             <!-- AGI -->
                             <div class="flex items-center space-x-2">
-                                <label class="ro-label mb-0 w-8">AGI</label>
-                                <input type="number" class="flex-1 border-slate-700 rounded-lg bg-slate-900 py-1.5 px-2 text-sm font-bold text-center base-stat-input" data-stat="agi" data-type="base" value="1" min="1" max="99">
-                                <span class="text-slate-600 font-bold text-xs">+</span>
-                                <input type="number" class="w-16 border-slate-700 rounded-lg bg-slate-800/50 py-1.5 px-2 text-sm font-bold text-center base-stat-input text-blue-400" data-stat="agi" data-type="bonus" value="0" min="0">
+                                <label class="ro-label mb-0 w-9" style="color:#22c55e;opacity:0.9;">AGI</label>
+                                <input type="number" class="flex-1 border rounded-md py-1.5 px-2 text-sm font-bold text-center base-stat-input" data-stat="agi" data-type="base" value="1" min="1" max="99" style="border-color:var(--border-hi);background:var(--panel-low);">
+                                <span style="color:var(--border-hi);font-weight:700;font-size:11px;">+</span>
+                                <input type="number" class="w-14 border rounded-md py-1.5 px-2 text-sm font-bold text-center base-stat-input" data-stat="agi" data-type="bonus" value="0" min="0" style="border-color:var(--border);background:var(--panel);color:#60a5fa;">
                             </div>
                             <!-- VIT -->
                             <div class="flex items-center space-x-2">
-                                <label class="ro-label mb-0 w-8">VIT</label>
-                                <input type="number" class="flex-1 border-slate-700 rounded-lg bg-slate-900 py-1.5 px-2 text-sm font-bold text-center base-stat-input" data-stat="vit" data-type="base" value="1" min="1" max="99">
-                                <span class="text-slate-600 font-bold text-xs">+</span>
-                                <input type="number" class="w-16 border-slate-700 rounded-lg bg-slate-800/50 py-1.5 px-2 text-sm font-bold text-center base-stat-input text-blue-400" data-stat="vit" data-type="bonus" value="0" min="0">
+                                <label class="ro-label mb-0 w-9" style="color:#fb923c;opacity:0.9;">VIT</label>
+                                <input type="number" class="flex-1 border rounded-md py-1.5 px-2 text-sm font-bold text-center base-stat-input" data-stat="vit" data-type="base" value="1" min="1" max="99" style="border-color:var(--border-hi);background:var(--panel-low);">
+                                <span style="color:var(--border-hi);font-weight:700;font-size:11px;">+</span>
+                                <input type="number" class="w-14 border rounded-md py-1.5 px-2 text-sm font-bold text-center base-stat-input" data-stat="vit" data-type="bonus" value="0" min="0" style="border-color:var(--border);background:var(--panel);color:#60a5fa;">
                             </div>
                             <!-- INT -->
                             <div class="flex items-center space-x-2">
-                                <label class="ro-label mb-0 w-8">INT</label>
-                                <input type="number" class="flex-1 border-slate-700 rounded-lg bg-slate-900 py-1.5 px-2 text-sm font-bold text-center base-stat-input" data-stat="int" data-type="base" value="1" min="1" max="99">
-                                <span class="text-slate-600 font-bold text-xs">+</span>
-                                <input type="number" class="w-16 border-slate-700 rounded-lg bg-slate-800/50 py-1.5 px-2 text-sm font-bold text-center base-stat-input text-blue-400" data-stat="int" data-type="bonus" value="0" min="0">
+                                <label class="ro-label mb-0 w-9" style="color:var(--purple-light);opacity:0.9;">INT</label>
+                                <input type="number" class="flex-1 border rounded-md py-1.5 px-2 text-sm font-bold text-center base-stat-input" data-stat="int" data-type="base" value="1" min="1" max="99" style="border-color:var(--border-hi);background:var(--panel-low);">
+                                <span style="color:var(--border-hi);font-weight:700;font-size:11px;">+</span>
+                                <input type="number" class="w-14 border rounded-md py-1.5 px-2 text-sm font-bold text-center base-stat-input" data-stat="int" data-type="bonus" value="0" min="0" style="border-color:var(--border);background:var(--panel);color:#60a5fa;">
                             </div>
                             <!-- DEX -->
                             <div class="flex items-center space-x-2">
-                                <label class="ro-label mb-0 w-8">DEX</label>
-                                <input type="number" class="flex-1 border-slate-700 rounded-lg bg-slate-900 py-1.5 px-2 text-sm font-bold text-center base-stat-input" data-stat="dex" data-type="base" value="1" min="1" max="99">
-                                <span class="text-slate-600 font-bold text-xs">+</span>
-                                <input type="number" class="w-16 border-slate-700 rounded-lg bg-slate-800/50 py-1.5 px-2 text-sm font-bold text-center base-stat-input text-blue-400" data-stat="dex" data-type="bonus" value="0" min="0">
+                                <label class="ro-label mb-0 w-9" style="color:var(--teal);opacity:0.9;">DEX</label>
+                                <input type="number" class="flex-1 border rounded-md py-1.5 px-2 text-sm font-bold text-center base-stat-input" data-stat="dex" data-type="base" value="1" min="1" max="99" style="border-color:var(--border-hi);background:var(--panel-low);">
+                                <span style="color:var(--border-hi);font-weight:700;font-size:11px;">+</span>
+                                <input type="number" class="w-14 border rounded-md py-1.5 px-2 text-sm font-bold text-center base-stat-input" data-stat="dex" data-type="bonus" value="0" min="0" style="border-color:var(--border);background:var(--panel);color:#60a5fa;">
                             </div>
                             <!-- LUK -->
                             <div class="flex items-center space-x-2">
-                                <label class="ro-label mb-0 w-8">LUK</label>
-                                <input type="number" class="flex-1 border-slate-700 rounded-lg bg-slate-900 py-1.5 px-2 text-sm font-bold text-center base-stat-input" data-stat="luk" data-type="base" value="1" min="1" max="99">
-                                <span class="text-slate-600 font-bold text-xs">+</span>
-                                <input type="number" class="w-16 border-slate-700 rounded-lg bg-slate-800/50 py-1.5 px-2 text-sm font-bold text-center base-stat-input text-blue-400" data-stat="luk" data-type="bonus" value="0" min="0">
+                                <label class="ro-label mb-0 w-9" style="color:var(--gold-light);opacity:0.9;">LUK</label>
+                                <input type="number" class="flex-1 border rounded-md py-1.5 px-2 text-sm font-bold text-center base-stat-input" data-stat="luk" data-type="base" value="1" min="1" max="99" style="border-color:var(--border-hi);background:var(--panel-low);">
+                                <span style="color:var(--border-hi);font-weight:700;font-size:11px;">+</span>
+                                <input type="number" class="w-14 border rounded-md py-1.5 px-2 text-sm font-bold text-center base-stat-input" data-stat="luk" data-type="bonus" value="0" min="0" style="border-color:var(--border);background:var(--panel);color:#60a5fa;">
                             </div>
                         </div>
-                        <div class="mt-6 pt-6 border-t border-slate-700 space-y-3">
-                            <button id="open-manual-stats" class="w-full ro-button py-2 rounded-lg text-[10px] font-black uppercase tracking-widest bg-slate-700 hover:bg-slate-600 border-slate-600">
-                                <i class="fas fa-edit mr-2"></i> Edit Base Values
+                        <div class="mt-5 pt-5" style="border-top:1px solid var(--border);">
+                            <button id="open-manual-stats" class="w-full ro-button ro-button-outline py-2 rounded-lg text-[10px] font-black uppercase tracking-widest mb-4">
+                                <i class="fas fa-edit mr-2"></i>Edit Base Values
                             </button>
-                            <div class="flex justify-between items-center mb-2">
-                                <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Stat Points Used</span>
-                                <span id="stat-points-used" class="text-xs font-black text-white">0</span>
+                            <div class="flex justify-between items-center mb-1.5">
+                                <span class="ro-label mb-0">Stat Points Used</span>
+                                <span id="stat-points-used" class="text-xs font-black" style="color:var(--text);">0</span>
                             </div>
-                            <div class="w-full bg-slate-900 rounded-full h-1.5 border border-slate-700 overflow-hidden">
-                                <div id="stat-points-bar" class="bg-ro-blue h-full" style="width: 0%"></div>
+                            <div class="w-full rounded-full overflow-hidden h-1.5" style="background:var(--panel-low);border:1px solid var(--border);">
+                                <div id="stat-points-bar" class="h-full rounded-full transition-all duration-500"
+                                     style="width:0%;background:linear-gradient(90deg,var(--blue),var(--purple));"></div>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Derived Stats Display -->
-                <div class="lg:col-span-3 space-y-6">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <!-- General Stats -->
-                        <div class="ro-window overflow-hidden">
+                <div class="lg:col-span-3 space-y-5">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <!-- General -->
+                        <div class="ro-window">
                             <div class="ro-header">
-                                <span class="text-xs font-bold uppercase tracking-widest">General Stats</span>
-                                <i class="fas fa-swords text-slate-500 text-xs"></i>
+                                <span style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;">General Stats</span>
+                                <i class="fas fa-sword" style="color:var(--text-muted);font-size:11px;"></i>
                             </div>
-                            <div class="p-6 grid grid-cols-2 gap-4" id="derived-general-stats">
-                                <!-- Populated via JS -->
-                            </div>
+                            <div class="p-5 grid grid-cols-2 gap-3" id="derived-general-stats"></div>
                         </div>
-
-                        <!-- Quasi-stats -->
-                        <div class="ro-window overflow-hidden">
+                        <!-- Quasi -->
+                        <div class="ro-window">
                             <div class="ro-header">
-                                <span class="text-xs font-bold uppercase tracking-widest">Quasi-stats</span>
-                                <i class="fas fa-shield-alt text-slate-500 text-xs"></i>
+                                <span style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;">Quasi-stats</span>
+                                <i class="fas fa-shield-alt" style="color:var(--text-muted);font-size:11px;"></i>
                             </div>
-                            <div class="p-6 grid grid-cols-2 gap-4" id="derived-quasi-stats">
-                                <!-- Populated via JS -->
-                            </div>
+                            <div class="p-5 grid grid-cols-2 gap-3" id="derived-quasi-stats"></div>
                         </div>
-
-                        <!-- Special Stats -->
-                        <div class="ro-window md:col-span-2 overflow-hidden">
+                        <!-- Special -->
+                        <div class="ro-window md:col-span-2">
                             <div class="ro-header">
-                                <span class="text-xs font-bold uppercase tracking-widest">Special Stats</span>
-                                <i class="fas fa-star text-slate-500 text-xs"></i>
+                                <span style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;">Special Stats</span>
+                                <i class="fas fa-star" style="color:var(--text-muted);font-size:11px;"></i>
                             </div>
-                            <div class="p-6 grid grid-cols-2 md:grid-cols-4 gap-4" id="derived-special-stats">
-                                <!-- Populated via JS -->
-                            </div>
+                            <div class="p-5 grid grid-cols-2 md:grid-cols-4 gap-3" id="derived-special-stats"></div>
                         </div>
                     </div>
 
-                    <!-- Stat Bonuses Info -->
-                    <div class="bg-slate-900/40 border border-slate-800 rounded-2xl p-6">
-                        <h4 class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4 flex items-center">
-                            <i class="fas fa-info-circle mr-2"></i> Stat Bonus Information
+                    <!-- Stat Bonus Reference -->
+                    <div class="rounded-xl p-5" style="background:rgba(255,255,255,0.015);border:1px solid var(--border);">
+                        <h4 class="flex items-center mb-4" style="font-size:9px;font-weight:800;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-muted);">
+                            <i class="fas fa-info-circle mr-2" style="color:var(--gold-dark);"></i>Stat Bonus Reference
                         </h4>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-[10px] text-slate-400 leading-relaxed">
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-4" style="font-size:10px;color:var(--text-muted);line-height:1.6;">
                             <div>
-                                <p class="font-bold text-slate-300 mb-1 uppercase">Strength (STR)</p>
-                                <p>Melee ATK +1, Ranged ATK +0.2<br>Melee Weapon ATK +0.5%</p>
+                                <p class="font-bold mb-1 uppercase" style="color:var(--red);font-size:9px;letter-spacing:0.08em;">Strength (STR)</p>
+                                <p>Melee ATK +1, Ranged +0.2<br>Melee Weapon ATK +0.5%</p>
                             </div>
                             <div>
-                                <p class="font-bold text-slate-300 mb-1 uppercase">Agility (AGI)</p>
+                                <p class="font-bold mb-1 uppercase" style="color:#22c55e;font-size:9px;letter-spacing:0.08em;">Agility (AGI)</p>
                                 <p>Flee +1, P.Def +0.2<br>Attack Speed Increase</p>
                             </div>
                             <div>
-                                <p class="font-bold text-slate-300 mb-1 uppercase">Vitality (VIT)</p>
-                                <p>MaxHP +1%, P.Def +0.5, M.Def +0.2<br>HP Recovery +0.2</p>
+                                <p class="font-bold mb-1 uppercase" style="color:#fb923c;font-size:9px;letter-spacing:0.08em;">Vitality (VIT)</p>
+                                <p>MaxHP +1%, P.Def +0.5<br>M.Def +0.2, HP Recovery +0.2</p>
                             </div>
                             <div>
-                                <p class="font-bold text-slate-300 mb-1 uppercase">Intelligence (INT)</p>
-                                <p>MATK +1.5, MaxSP +1%, M.Def +1<br>SP Recovery & Cast Reduction</p>
+                                <p class="font-bold mb-1 uppercase" style="color:var(--purple-light);font-size:9px;letter-spacing:0.08em;">Intelligence (INT)</p>
+                                <p>MATK +1.5, MaxSP +1%<br>M.Def +1, SP Recovery</p>
                             </div>
                             <div>
-                                <p class="font-bold text-slate-300 mb-1 uppercase">Dexterity (DEX)</p>
-                                <p>Ranged ATK +1, Melee ATK +0.2, Hit +1<br>Ranged Weapon ATK +0.5%</p>
+                                <p class="font-bold mb-1 uppercase" style="color:var(--teal);font-size:9px;letter-spacing:0.08em;">Dexterity (DEX)</p>
+                                <p>Ranged ATK +1, Melee +0.2<br>Hit +1, Cast Reduction</p>
                             </div>
                             <div>
-                                <p class="font-bold text-slate-300 mb-1 uppercase">Luck (LUK)</p>
+                                <p class="font-bold mb-1 uppercase" style="color:var(--gold-light);font-size:9px;letter-spacing:0.08em;">Luck (LUK)</p>
                                 <p>CRIT +0.3, Crit Def +0.2<br>PATK +0.2, MATK +0.3</p>
                             </div>
                         </div>
@@ -510,140 +684,150 @@
             </div>
         </div>
 
-        <!-- Support Me Tab -->
+        <!-- ── Support Me Tab ─────────────────────────────────────────────── -->
         <div id="tab-support" class="tab-content hidden animate-in p-4 lg:p-0">
-            <div class="max-w-5xl mx-auto space-y-6 lg:space-y-10">
-                
-                <!-- Roadmap Section -->
-                <div class="bg-slate-800/50 border border-slate-700 rounded-3xl overflow-hidden shadow-2xl">
-                    <div class="px-8 py-6 border-b border-slate-700 bg-slate-900/50 flex items-center justify-between">
+            <div class="max-w-5xl mx-auto space-y-6">
+
+                <!-- Roadmap -->
+                <div class="ro-window">
+                    <div class="ro-header" style="background:linear-gradient(135deg,#0a1628,#0e1e38);">
                         <div>
-                            <h3 class="text-white font-black text-sm uppercase tracking-widest">Development Roadmap</h3>
-                            <p class="text-slate-500 text-[10px] font-bold uppercase tracking-tighter">Current progress and upcoming features</p>
+                            <p class="game-title text-xs tracking-widest uppercase" style="color:var(--text);">Development Roadmap</p>
+                            <p class="text-[9px] mt-0.5" style="color:var(--text-muted);">Current progress & upcoming features</p>
                         </div>
-                        <div class="px-3 py-1 bg-blue-500/10 border border-blue-500/20 rounded-full">
-                            <span class="text-[9px] font-black text-blue-400 uppercase">Alpha v1.2</span>
-                        </div>
+                        <span class="text-[8px] font-black px-2.5 py-1 rounded-full uppercase tracking-widest"
+                              style="background:rgba(58,142,240,0.12);border:1px solid rgba(58,142,240,0.25);color:#60a5fa;">Alpha v1.2</span>
                     </div>
-                    <div class="p-8">
-                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                            <!-- Feather -->
-                            <div class="bg-slate-900/50 border border-slate-700 p-5 rounded-2xl flex items-center group hover:border-blue-500/50 transition-all">
-                                <div class="w-12 h-12 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center mr-4 group-hover:scale-110 transition-transform">
-                                    <i class="fas fa-feather text-xl"></i>
+                    <div class="p-5 lg:p-6">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                            <!-- Done -->
+                            <div class="rounded-xl p-4 flex items-center"
+                                 style="background:rgba(34,197,94,0.04);border:1px solid rgba(34,197,94,0.2);">
+                                <div class="w-11 h-11 rounded-xl flex items-center justify-center mr-3 flex-shrink-0"
+                                     style="background:rgba(34,197,94,0.1);">
+                                    <i class="fas fa-feather" style="color:#22c55e;font-size:17px;"></i>
                                 </div>
                                 <div>
-                                    <h4 class="text-white font-bold text-sm">Valkyrie Feather</h4>
-                                    <span class="text-[9px] font-black text-green-400 uppercase tracking-widest"><i class="fas fa-check-circle mr-1"></i>V1 Completed</span>
+                                    <p class="text-sm font-bold" style="color:var(--text);">Valkyrie Feather</p>
+                                    <p class="text-[9px] font-black uppercase tracking-widest" style="color:#22c55e;"><i class="fas fa-check-circle mr-1"></i>V1 Completed</p>
                                 </div>
                             </div>
-                            <!-- Stat -->
-                            <div class="bg-slate-900/50 border border-blue-500/30 p-5 rounded-2xl flex items-center group relative overflow-hidden transition-all">
-                                <div class="absolute top-0 right-0 px-2 py-0.5 bg-blue-500 text-[8px] font-black text-white uppercase tracking-tighter rounded-bl-lg">Active</div>
-                                <div class="w-12 h-12 rounded-xl bg-blue-500/20 text-blue-300 flex items-center justify-center mr-4">
-                                    <i class="fas fa-chart-line text-xl"></i>
+                            <!-- Active -->
+                            <div class="rounded-xl p-4 flex items-center relative overflow-hidden"
+                                 style="background:rgba(58,142,240,0.05);border:1px solid rgba(58,142,240,0.3);">
+                                <div class="absolute top-0 right-0 text-[7px] font-black px-2 py-0.5 rounded-bl-lg uppercase tracking-tighter"
+                                     style="background:var(--blue);color:white;">Active</div>
+                                <div class="w-11 h-11 rounded-xl flex items-center justify-center mr-3 flex-shrink-0"
+                                     style="background:rgba(58,142,240,0.12);">
+                                    <i class="fas fa-chart-line" style="color:#60a5fa;font-size:17px;"></i>
                                 </div>
                                 <div>
-                                    <h4 class="text-white font-bold text-sm">Stat conversion</h4>
-                                    <span class="text-[9px] font-black text-blue-400 uppercase tracking-widest animate-pulse">In Development</span>
+                                    <p class="text-sm font-bold" style="color:var(--text);">Stat Conversion</p>
+                                    <p class="text-[9px] font-black uppercase tracking-widest animate-pulse" style="color:#60a5fa;">In Development</p>
                                 </div>
                             </div>
-                            <!-- Equipment -->
-                            <div class="bg-slate-900/20 border border-slate-800 p-5 rounded-2xl flex items-center opacity-60">
-                                <div class="w-12 h-12 rounded-xl bg-slate-800 text-slate-500 flex items-center justify-center mr-4">
-                                    <i class="fas fa-shield-alt text-xl"></i>
+                            <!-- Planned x4 -->
+                            <div class="rounded-xl p-4 flex items-center opacity-40" style="background:var(--panel-low);border:1px solid var(--border);">
+                                <div class="w-11 h-11 rounded-xl flex items-center justify-center mr-3 flex-shrink-0" style="background:rgba(255,255,255,0.03);">
+                                    <i class="fas fa-shield-alt" style="color:var(--text-muted);font-size:17px;"></i>
                                 </div>
                                 <div>
-                                    <h4 class="text-slate-300 font-bold text-sm">Equipment</h4>
-                                    <span class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Planned</span>
+                                    <p class="text-sm font-bold" style="color:var(--text-muted);">Equipment</p>
+                                    <p class="text-[9px] font-black uppercase tracking-widest" style="color:var(--text-dim);">Planned</p>
                                 </div>
                             </div>
-                            <!-- Medal -->
-                            <div class="bg-slate-900/20 border border-slate-800 p-5 rounded-2xl flex items-center opacity-60">
-                                <div class="w-12 h-12 rounded-xl bg-slate-800 text-slate-500 flex items-center justify-center mr-4">
-                                    <i class="fas fa-medal text-xl"></i>
+                            <div class="rounded-xl p-4 flex items-center opacity-40" style="background:var(--panel-low);border:1px solid var(--border);">
+                                <div class="w-11 h-11 rounded-xl flex items-center justify-center mr-3 flex-shrink-0" style="background:rgba(255,255,255,0.03);">
+                                    <i class="fas fa-medal" style="color:var(--text-muted);font-size:17px;"></i>
                                 </div>
                                 <div>
-                                    <h4 class="text-slate-300 font-bold text-sm">Medal & Sigil</h4>
-                                    <span class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Planned</span>
+                                    <p class="text-sm font-bold" style="color:var(--text-muted);">Medal & Sigil</p>
+                                    <p class="text-[9px] font-black uppercase tracking-widest" style="color:var(--text-dim);">Planned</p>
                                 </div>
                             </div>
-                            <!-- Guild Skill -->
-                            <div class="bg-slate-900/20 border border-slate-800 p-5 rounded-2xl flex items-center opacity-60">
-                                <div class="w-12 h-12 rounded-xl bg-slate-800 text-slate-500 flex items-center justify-center mr-4">
-                                    <i class="fas fa-users text-xl"></i>
+                            <div class="rounded-xl p-4 flex items-center opacity-40" style="background:var(--panel-low);border:1px solid var(--border);">
+                                <div class="w-11 h-11 rounded-xl flex items-center justify-center mr-3 flex-shrink-0" style="background:rgba(255,255,255,0.03);">
+                                    <i class="fas fa-users" style="color:var(--text-muted);font-size:17px;"></i>
                                 </div>
                                 <div>
-                                    <h4 class="text-slate-300 font-bold text-sm">Guild Skill</h4>
-                                    <span class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Planned</span>
+                                    <p class="text-sm font-bold" style="color:var(--text-muted);">Guild Skill</p>
+                                    <p class="text-[9px] font-black uppercase tracking-widest" style="color:var(--text-dim);">Planned</p>
                                 </div>
                             </div>
-                            <!-- Cards -->
-                            <div class="bg-slate-900/20 border border-slate-800 p-5 rounded-2xl flex items-center opacity-60">
-                                <div class="w-12 h-12 rounded-xl bg-slate-800 text-slate-500 flex items-center justify-center mr-4">
-                                    <i class="fas fa-clone text-xl"></i>
+                            <div class="rounded-xl p-4 flex items-center opacity-40" style="background:var(--panel-low);border:1px solid var(--border);">
+                                <div class="w-11 h-11 rounded-xl flex items-center justify-center mr-3 flex-shrink-0" style="background:rgba(255,255,255,0.03);">
+                                    <i class="fas fa-clone" style="color:var(--text-muted);font-size:17px;"></i>
                                 </div>
                                 <div>
-                                    <h4 class="text-slate-300 font-bold text-sm">Card Database</h4>
-                                    <span class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Planned</span>
+                                    <p class="text-sm font-bold" style="color:var(--text-muted);">Card Database</p>
+                                    <p class="text-[9px] font-black uppercase tracking-widest" style="color:var(--text-dim);">Planned</p>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
-                    <!-- Support Card -->
-                    <div class="bg-white rounded-3xl overflow-hidden shadow-2xl flex flex-col items-center justify-center p-8 lg:p-12">
-                        <div class="text-center mb-8">
-                            <h2 class="text-2xl font-black text-slate-900 mb-2">Buy the Researcher a Coffee</h2>
-                            <p class="text-slate-500 text-sm">Help keep the servers running and data updated!</p>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                    <!-- QR Support -->
+                    <div class="rounded-2xl overflow-hidden shadow-2xl flex flex-col items-center justify-center p-8" style="background:#fff;">
+                        <div class="text-center mb-6">
+                            <h2 class="text-xl font-black text-slate-900 mb-1">Buy the Researcher a Coffee</h2>
+                            <p class="text-slate-500 text-sm">Help keep data updated!</p>
                         </div>
                         <div class="relative group">
-                            <div class="absolute -inset-4 bg-gradient-to-tr from-ro-blue to-ro-accent rounded-[2rem] opacity-20 group-hover:opacity-40 transition-opacity blur-2xl"></div>
-                            <img src="data/support me/Touch n Go QR.png" alt="Touch n Go QR Code" class="relative max-w-[240px] w-full shadow-2xl rounded-2xl border-4 border-slate-100 rotate-1 group-hover:rotate-0 transition-transform duration-500">
+                            <div class="absolute -inset-4 rounded-3xl opacity-20 group-hover:opacity-40 transition-all blur-2xl"
+                                 style="background:linear-gradient(135deg,var(--blue),var(--gold));"></div>
+                            <img src="data/support me/Touch n Go QR.png" alt="Touch n Go QR Code"
+                                 class="relative max-w-[220px] w-full rounded-xl shadow-xl transition-transform duration-500 group-hover:scale-105"
+                                 style="border:3px solid #e2e8f0;">
                         </div>
-                        <p class="mt-8 text-[10px] font-black uppercase tracking-widest text-slate-400">Scan via Touch n Go eWallet</p>
+                        <p class="mt-6 text-[9px] font-black uppercase tracking-widest text-slate-400">Scan via Touch n Go eWallet</p>
                     </div>
 
-                    <!-- Contribution Card -->
-                    <div class="bg-slate-800/50 border border-slate-700 rounded-3xl p-8 lg:p-12 flex flex-col justify-center">
-                        <div class="w-16 h-16 bg-ro-accent rounded-2xl flex items-center justify-center mb-8 shadow-lg shadow-orange-500/20">
+                    <!-- Contribute -->
+                    <div class="config-card flex flex-col justify-center">
+                        <div class="w-14 h-14 rounded-2xl flex items-center justify-center mb-6 shadow-lg"
+                             style="background:linear-gradient(135deg,var(--gold-dark),var(--gold));box-shadow:0 8px 20px rgba(240,168,0,0.3);">
                             <i class="fas fa-flask text-white text-2xl"></i>
                         </div>
-                        <h2 class="text-3xl font-black text-white mb-6">Contribute Data</h2>
-                        <p class="text-slate-400 leading-relaxed mb-8">
-                            This tool is built on personal research. Since game resources are scarce, your screenshots of high-tier feather stats or set bonuses are invaluable!
+                        <h2 class="text-2xl font-black mb-3" style="color:var(--text);">Contribute Data</h2>
+                        <p style="color:var(--text-muted);font-size:14px;line-height:1.7;margin-bottom:20px;">
+                            Built on personal research. Your screenshots of high-tier feather stats or set bonuses are invaluable.
                         </p>
-                        <div class="space-y-4 mb-10">
-                            <div class="flex items-center text-sm font-bold text-slate-300">
-                                <div class="w-6 h-6 rounded-full bg-green-500/10 text-green-400 flex items-center justify-center mr-3 text-[10px]"><i class="fas fa-check"></i></div>
+                        <div class="space-y-3 mb-6">
+                            <div class="flex items-center text-sm font-bold" style="color:var(--text);">
+                                <div class="w-6 h-6 rounded-full flex items-center justify-center mr-3 text-[9px]"
+                                     style="background:rgba(34,197,94,0.1);color:#22c55e;border:1px solid rgba(34,197,94,0.2);">
+                                    <i class="fas fa-check"></i>
+                                </div>
                                 Report incorrect stat values
                             </div>
-                            <div class="flex items-center text-sm font-bold text-slate-300">
-                                <div class="w-6 h-6 rounded-full bg-blue-500/10 text-blue-400 flex items-center justify-center mr-3 text-[10px]"><i class="fas fa-check"></i></div>
+                            <div class="flex items-center text-sm font-bold" style="color:var(--text);">
+                                <div class="w-6 h-6 rounded-full flex items-center justify-center mr-3 text-[9px]"
+                                     style="background:rgba(58,142,240,0.1);color:#60a5fa;border:1px solid rgba(58,142,240,0.2);">
+                                    <i class="fas fa-check"></i>
+                                </div>
                                 Submit Tier 15+ data
                             </div>
                         </div>
-                        <div class="flex flex-col sm:flex-row gap-3">
-                            <a href="mailto:blokd6@gmail.com" class="ro-button ro-button-primary px-8 py-4 rounded-xl flex-1 shadow-lg shadow-blue-500/20">
-                                <i class="fas fa-envelope mr-2 text-lg"></i>Email Research Data
-                            </a>
-                        </div>
+                        <a href="mailto:blokd6@gmail.com" class="ro-button ro-button-primary px-8 py-3.5 rounded-xl text-center"
+                           style="width:100%;display:flex;">
+                            <i class="fas fa-envelope mr-2"></i>Email Research Data
+                        </a>
                     </div>
                 </div>
             </div>
         </div>
     </main>
 
-    <!-- Mobile Bottom Navigation -->
-    <div class="lg:hidden fixed bottom-0 left-0 right-0 h-16 glass-nav z-50 flex items-center px-4">
+    <!-- ── Mobile Bottom Navigation ──────────────────────────────────────── -->
+    <div class="lg:hidden fixed bottom-0 left-0 right-0 h-[62px] glass-nav z-50 flex items-stretch px-2">
         <button class="mobile-tab-btn active" data-target="tab-stats">
             <i class="fas fa-chart-line"></i>
             <span>Stats</span>
         </button>
         <button class="mobile-tab-btn" data-target="tab-feather">
-            <i class="fas fa-feather"></i>
+            <i class="fas fa-feather-alt"></i>
             <span>Statue</span>
         </button>
         <button class="mobile-tab-btn opacity-30 cursor-not-allowed">
@@ -656,90 +840,91 @@
         </button>
     </div>
 
-    <!-- Inventory Modal -->
-    <div id="inv-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
-        <div class="bg-slate-800 border border-slate-700 rounded-3xl w-full max-w-2xl max-h-[85vh] flex flex-col shadow-2xl overflow-hidden animate-in">
-            <div class="bg-slate-900 px-6 lg:px-8 py-4 lg:py-6 flex justify-between items-center border-b border-slate-700">
+    <!-- ── Inventory Modal ───────────────────────────────────────────────── -->
+    <div id="inv-modal" class="fixed inset-0 hidden items-center justify-center z-50 p-4"
+         style="background:rgba(0,0,0,0.75);backdrop-filter:blur(8px);">
+        <div class="w-full max-w-2xl max-h-[85vh] flex flex-col shadow-2xl overflow-hidden animate-in"
+             style="background:var(--panel);border:1px solid var(--border-hi);border-radius:16px;">
+            <!-- Header -->
+            <div class="flex justify-between items-center px-6 py-4" style="background:var(--panel-low);border-bottom:1px solid var(--border);">
                 <div class="flex items-center">
-                    <div class="w-10 h-10 bg-green-500 rounded-xl flex items-center justify-center mr-4 shadow-lg shadow-green-500/20">
-                        <i class="fas fa-box text-white text-sm"></i>
+                    <div class="w-9 h-9 rounded-xl flex items-center justify-center mr-3"
+                         style="background:rgba(34,197,94,0.15);border:1px solid rgba(34,197,94,0.25);">
+                        <i class="fas fa-box text-sm" style="color:#22c55e;"></i>
                     </div>
                     <div>
-                        <h3 class="text-white font-black text-sm uppercase tracking-widest">Feather Inventory</h3>
-                        <p class="text-slate-500 text-[10px] font-bold uppercase tracking-tighter">Manage your owned resources</p>
+                        <p class="game-title text-xs tracking-widest uppercase" style="color:var(--text);">Feather Inventory</p>
+                        <p class="text-[9px]" style="color:var(--text-muted);">Manage owned resources</p>
                     </div>
                 </div>
-                <button id="close-inv" class="w-8 h-8 flex items-center justify-center rounded-full bg-white/5 text-white hover:bg-white/10 transition-colors">
+                <button id="close-inv" class="w-8 h-8 flex items-center justify-center rounded-full transition-all"
+                        style="background:rgba(255,255,255,0.05);color:var(--text-muted);">
                     <i class="fas fa-times text-xs"></i>
                 </button>
             </div>
-            <div class="p-4 lg:p-8 overflow-y-auto bg-slate-800/50" id="inv-list">
-                <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 lg:gap-4" id="inv-inputs"></div>
+            <!-- List -->
+            <div class="p-4 overflow-y-auto" id="inv-list" style="background:rgba(255,255,255,0.01);">
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5" id="inv-inputs"></div>
             </div>
-            <div class="px-6 lg:px-8 py-4 lg:py-6 bg-slate-900 border-t border-slate-700 flex justify-end items-center">
-                <span class="hidden sm:block mr-auto text-[10px] font-bold text-slate-500 uppercase italic">Changes are saved automatically</span>
-                <button id="save-inv" class="ro-button ro-button-primary px-8 py-3 rounded-xl w-full sm:w-auto">
+            <!-- Footer -->
+            <div class="flex justify-between items-center px-6 py-4" style="background:var(--panel-low);border-top:1px solid var(--border);">
+                <span class="hidden sm:block text-[9px] font-bold uppercase tracking-widest italic" style="color:var(--text-dim);">Saved automatically</span>
+                <button id="save-inv" class="ro-button ro-button-primary px-8 py-2.5 rounded-xl w-full sm:w-auto">
                     Confirm & Save
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- Manual Stats Modal -->
-    <div id="manual-stats-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center z-[60] p-4">
-        <div class="bg-slate-800 border border-slate-700 rounded-3xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-in">
-            <div class="bg-slate-900 px-6 py-5 flex justify-between items-center border-b border-slate-700">
+    <!-- ── Manual Stats Modal ────────────────────────────────────────────── -->
+    <div id="manual-stats-modal" class="fixed inset-0 hidden items-center justify-center z-[60] p-4"
+         style="background:rgba(0,0,0,0.8);backdrop-filter:blur(8px);">
+        <div class="w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-in"
+             style="background:var(--panel);border:1px solid var(--border-hi);border-radius:16px;">
+            <!-- Header -->
+            <div class="flex justify-between items-center px-6 py-4" style="background:var(--panel-low);border-bottom:1px solid var(--border);">
                 <div class="flex items-center">
-                    <div class="w-10 h-10 bg-slate-700 rounded-xl flex items-center justify-center mr-4 shadow-lg shadow-slate-700/20">
-                        <i class="fas fa-edit text-white text-sm"></i>
+                    <div class="w-9 h-9 rounded-xl flex items-center justify-center mr-3"
+                         style="background:rgba(255,255,255,0.05);border:1px solid var(--border-hi);">
+                        <i class="fas fa-edit text-sm" style="color:var(--text-muted);"></i>
                     </div>
                     <div>
-                        <h3 class="text-white font-black text-sm uppercase tracking-widest">Character Base Values</h3>
-                        <p class="text-slate-500 text-[10px] font-bold uppercase tracking-tighter">Enter your "naked" stats from the game</p>
+                        <p class="game-title text-xs tracking-widest uppercase" style="color:var(--text);">Character Base Values</p>
+                        <p class="text-[9px]" style="color:var(--text-muted);">Enter your "naked" stats from the game</p>
                     </div>
                 </div>
-                <button id="close-manual-stats" class="w-8 h-8 flex items-center justify-center rounded-full bg-white/5 text-white hover:bg-white/10 transition-colors">
+                <button id="close-manual-stats" class="w-8 h-8 flex items-center justify-center rounded-full transition-all"
+                        style="background:rgba(255,255,255,0.05);color:var(--text-muted);">
                     <i class="fas fa-times text-xs"></i>
                 </button>
             </div>
-            
-            <div class="p-6 lg:p-10 overflow-y-auto bg-slate-800/50">
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    <!-- General Stats Inputs -->
-                    <div class="space-y-4">
-                        <h4 class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4 flex items-center border-b border-slate-700 pb-2">
-                            <i class="fas fa-swords mr-2"></i> General Stats
+            <!-- Body -->
+            <div class="p-5 lg:p-8 overflow-y-auto">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div>
+                        <h4 class="flex items-center pb-2 mb-3" style="font-size:9px;font-weight:800;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-muted);border-bottom:1px solid var(--border);">
+                            <i class="fas fa-swords mr-2" style="color:var(--red);opacity:0.7;"></i>General Stats
                         </h4>
-                        <div class="grid grid-cols-1 gap-3" id="manual-general-inputs">
-                            <!-- Populated via JS -->
-                        </div>
+                        <div class="space-y-2" id="manual-general-inputs"></div>
                     </div>
-
-                    <!-- Quasi Stats Inputs -->
-                    <div class="space-y-4">
-                        <h4 class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4 flex items-center border-b border-slate-700 pb-2">
-                            <i class="fas fa-shield-alt mr-2"></i> Quasi-stats
+                    <div>
+                        <h4 class="flex items-center pb-2 mb-3" style="font-size:9px;font-weight:800;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-muted);border-bottom:1px solid var(--border);">
+                            <i class="fas fa-shield-alt mr-2" style="color:var(--blue);opacity:0.7;"></i>Quasi-stats
                         </h4>
-                        <div class="grid grid-cols-1 gap-3" id="manual-quasi-inputs">
-                            <!-- Populated via JS -->
-                        </div>
+                        <div class="space-y-2" id="manual-quasi-inputs"></div>
                     </div>
-
-                    <!-- Special Stats Inputs -->
-                    <div class="space-y-4">
-                        <h4 class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4 flex items-center border-b border-slate-700 pb-2">
-                            <i class="fas fa-star mr-2"></i> Special Stats
+                    <div>
+                        <h4 class="flex items-center pb-2 mb-3" style="font-size:9px;font-weight:800;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-muted);border-bottom:1px solid var(--border);">
+                            <i class="fas fa-star mr-2" style="color:var(--gold);opacity:0.7;"></i>Special Stats
                         </h4>
-                        <div class="grid grid-cols-1 gap-3" id="manual-special-inputs">
-                            <!-- Populated via JS -->
-                        </div>
+                        <div class="space-y-2" id="manual-special-inputs"></div>
                     </div>
                 </div>
             </div>
-
-            <div class="px-8 py-6 bg-slate-900 border-t border-slate-700 flex justify-end items-center">
-                <button id="save-manual-stats" class="ro-button ro-button-primary px-12 py-3 rounded-xl w-full sm:w-auto text-sm font-black uppercase tracking-widest">
-                    <i class="fas fa-save mr-2"></i> Save & Recalculate
+            <!-- Footer -->
+            <div class="flex justify-end px-6 py-4" style="background:var(--panel-low);border-top:1px solid var(--border);">
+                <button id="save-manual-stats" class="ro-button ro-button-primary px-10 py-3 rounded-xl w-full sm:w-auto font-black uppercase tracking-widest">
+                    <i class="fas fa-save mr-2"></i>Save & Recalculate
                 </button>
             </div>
         </div>
